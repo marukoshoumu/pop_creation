@@ -305,17 +305,21 @@ function capturePng_() {
 }
 
 var saved_ = false;
+var saving_ = false;
 function savePopWithPng_() {
-  if (saved_) return Promise.resolve();
+  if (saved_ || saving_) return Promise.resolve();
+  saving_ = true;
   var status = document.getElementById('save-status');
   status.textContent = '履歴に保存しています…';
   return capturePng_().then(function (png) {
     return runServer('api_savePop', popRecord_(), png).then(function (r) {
       saved_ = true;
+      saving_ = false;
       status.textContent = '✓ 履歴に保存しました（' + r.id + '）' +
         (r.thumbnailSaved ? '' : ' ※サムネイル画像は保存できませんでした（再印刷は可能です）');
     });
   }).catch(function (e) {
+    saving_ = false;
     status.innerHTML = '保存に失敗しました: ' + escapeHtml(e.message) +
       ' <button class="btn mini" id="save-retry">保存を再試行</button>';
     document.getElementById('save-retry').addEventListener('click', savePopWithPng_);
@@ -323,11 +327,10 @@ function savePopWithPng_() {
 }
 
 document.getElementById('btn-print').addEventListener('click', function () {
+  if (saving_) return;
   var area = document.getElementById('print-area');
   area.innerHTML = renderPop(state.content);
-  area.style.left = '0';
   window.print();
-  area.style.left = '-9999px';
   area.innerHTML = '';
   savePopWithPng_();   // 印刷ダイアログ後に保存（spec: 保存失敗でも印刷は成立）
 });
