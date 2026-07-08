@@ -12,68 +12,74 @@ function escapeHtml(s) {
     .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
 }
 
-function priceHtml_(価格) {
-  if (価格 === null || 価格 === undefined || 価格 === '') return '';
-  return '<span class="price">' + escapeHtml(価格) +
-    '<span class="yen">円</span><span class="tax">（税込）</span></span>';
+/** 末尾の ？/? を強調 span で包む（見出し用） */
+function emphasizeQ_(s) {
+  var t = escapeHtml(s);
+  return t.replace(/([？?])\s*$/, '<span class="qm">$1</span>');
+}
+
+function themeClass_(content) {
+  var t = content.fontTheme;
+  if (t !== 'pen' && t !== 'pop') t = 'fude';  // 既定=筆
+  return 'theme-' + t;
+}
+
+/* ===== 商品型（棚札） ===== */
+function shelfPriceHtml_(価格) {
+  if (価格 === null || 価格 === undefined || 価格 === '') return '<div class="price"></div>';
+  return '<div class="price">' + escapeHtml(価格) +
+    '<span class="yen">円</span><span class="tax">（税込）</span></div>';
 }
 
 function renderProduct_(c) {
   var f = c.fields;
+  var badge = c.catchAngle
+    ? '<span class="zip">' + escapeHtml(c.catchAngle) + '</span>'
+    : '';
   return [
-    '<div class="pop shelf ' + escapeHtml(c.variant) + '">',
-    '  <div class="catch">' + escapeHtml(c.catch) + '</div>',
-    '  <div class="name-row"><span class="name">' + escapeHtml(f.商品名) + '</span>',
-    f.補足 ? '  <span class="reading">' + escapeHtml(f.補足) + '</span>' : '',
+    '<div class="pop shelf ' + escapeHtml(c.variant) + ' ' + themeClass_(c) + '">',
+    '  <div class="catch">' + badge + escapeHtml(c.catch) + '</div>',
+    '  <div class="name-wrap"><div class="name">' + escapeHtml(f.商品名) + '</div>',
+    f.補足 ? '    <div class="reading">' + escapeHtml(f.補足) + '</div>' : '',
     '  </div>',
-    '  <div class="bottom">',
-    '    <span class="producer">' + escapeHtml(f.生産者) + '</span>',
-    '    <span class="amount">' + escapeHtml(f.容量) + '</span>',
-    '    ' + priceHtml_(f.価格),
-    '  </div>',
+    '  ' + shelfPriceHtml_(f.価格),
+    '  <div class="foot"><span>' + escapeHtml(f.生産者) + '</span><span><b>' + escapeHtml(f.容量) + '</b></span></div>',
     '</div>',
-  ].join('\n');
+  ].filter(Boolean).join('\n');
 }
 
-function chartHtml_(list) {
-  if (!list || list.length === 0) return '';
-  var items = list.filter(function (d) {
-    // 0除算・不正値ガード: 比較値が有限かつ 0 超でない項目はグラフに出さない
+/* ===== 説明型の部品 ===== */
+function validCompare_(list) {
+  return (list || []).filter(function (d) {
     return isFinite(d.対象値) && isFinite(d.比較値) && d.比較値 > 0;
-  }).slice(0, 2).map(function (d) {
-    var ratio = d.対象値 / d.比較値;
-    var mainH = 96;                                    // 対象バーは常に 96%
-    var baseH = (isFinite(ratio) && ratio > 0)
-      ? Math.max(10, Math.min(96, Math.round(96 / ratio)))  // 比較バーは比率で縮小
-      : 10;                                                  // ratio が 0/NaN/Infinity は下限値
-    var label = escapeHtml(ratio) + escapeHtml(d.単位 || '倍') + '！';
-    return [
-      '<div class="chart">',
-      '  <div class="bars">',
-      '    <div class="bar g" style="height:' + mainH + '%"><span class="x">' + label + '</span></div>',
-      '    <div class="bar w" style="height:' + baseH + '%"></div>',
-      '  </div>',
-      '  <div class="cap">' + escapeHtml(d.ラベル) + (d.補足 ? '（' + escapeHtml(d.補足) + '）' : '') + '</div>',
-      '</div>',
-    ].join('\n');
-  });
-  if (items.length === 0) return '';
-  return '<div class="charts">' + items.join('\n') + '</div>';
+  }).slice(0, 2);
 }
 
-function explainListHtml_(bullets) {
-  var li = (bullets || []).map(function (s) {
-    return '<li><span class="mark">✔</span><span>' + escapeHtml(s) + '</span></li>';
+function chartsHtml_(list) {
+  var items = validCompare_(list);
+  if (items.length === 0) return '';
+  var cls = ['', 'fe'];
+  var html = items.map(function (d, i) {
+    var ratio = d.対象値 / d.比較値;
+    var hi = 100;
+    var lo = Math.max(12, Math.min(96, Math.round(96 / ratio)));  // ratio>0 保証済み
+    return [
+      '<div class="chart ' + cls[i % 2] + '">',
+      '  <div class="metric">' + escapeHtml(d.ラベル) + '</div>',
+      '  <div class="mult">' + escapeHtml(ratio) + escapeHtml(d.単位 || '倍') + '！</div>',
+      '  <div class="bars"><div class="bar hi" style="height:' + hi + '%"></div><div class="bar lo" style="height:' + lo + '%"></div></div>',
+      '  <div class="lg"><span>' + escapeHtml(d.対象名 || '本品') + '</span><span>' + escapeHtml(d.比較名 || '一般品') + '</span></div>',
+      d.補足 ? '  <div class="cap">' + escapeHtml(d.補足) + '</div>' : '',
+      '</div>',
+    ].filter(Boolean).join('\n');
   }).join('\n');
-  return li ? '<ul class="list">' + li + '</ul>' : '';
+  return '<div class="charts">' + html + '</div>';
 }
 
 function numberCardsHtml_(list) {
-  var cls = ['g', 'p'];
-  var items = (list || []).filter(function (d) {
-    return isFinite(d.対象値) && isFinite(d.比較値) && d.比較値 > 0;
-  }).slice(0, 2);
+  var items = validCompare_(list);
   if (items.length === 0) return '';
+  var cls = ['g', 'p'];
   var cards = items.map(function (d, i) {
     var ratio = d.対象値 / d.比較値;
     return '<div class="numcard ' + cls[i % 2] + '">' +
@@ -85,48 +91,53 @@ function numberCardsHtml_(list) {
   return '<div class="numbers">' + cards + '</div>';
 }
 
-function pointCardsHtml_(bullets) {
+function pointBoxesHtml_(bullets) {
   var items = (bullets || []).slice(0, 4);
   if (items.length === 0) return '';
-  var rows = items.map(function (s) {
+  return '<div class="pointlist">' + items.map(function (s) {
     return '<div class="pointbox">' + escapeHtml(s) + '</div>';
-  }).join('');
-  return '<div class="pointlist">' + rows + '</div>';
+  }).join('') + '</div>';
+}
+
+function listHtml_(bullets) {
+  var items = (bullets || []).slice(0, 6);
+  if (items.length === 0) return '';
+  return '<ul class="list">' + items.map(function (s) {
+    return '<li><span class="mark">✔</span><span>' + escapeHtml(s) + '</span></li>';
+  }).join('') + '</ul>';
 }
 
 /**
- * 説明型は変種ごとに別レイアウト（モック準拠）。
+ * 説明型は変種ごとに別レイアウト。
  * e1 問いかけ型 / e2 数字インパクト型 / e3 やさしい解説型。
- * 比較データが無い場合も箇条書きで見栄えするようフォールバックする。
+ * 比較データが無い場合も箇条書き・説明文で見栄えするようフォールバック。
  */
 function renderExplain_(c) {
   var f = c.fields;
   var v = (c.variant === 'e2' || c.variant === 'e3') ? c.variant : 'e1';
-  var parts = ['<div class="pop a4 ' + escapeHtml(c.variant) + '">', '<div class="tape"></div>'];
+  var parts = ['<div class="pop a4 ' + escapeHtml(c.variant) + ' ' + themeClass_(c) + '">'];
 
   if (v === 'e2') {
-    // 数字インパクト型: 比較データを数字カードに。無ければ箇条書きを要点カードに。
+    // 数字インパクト型
     parts.push('<div class="theme">' + escapeHtml(c.catch) + '</div>');
-    parts.push(numberCardsHtml_(f.比較データ) || pointCardsHtml_(f.箇条書き));
+    parts.push(numberCardsHtml_(f.比較データ) || pointBoxesHtml_(f.箇条書き));
     if (f.説明文) parts.push('<div class="body-text">' + escapeHtml(f.説明文) + '</div>');
     parts.push('<div class="foot">' + escapeHtml(f.主題) + '、いかがですか？</div>');
   } else if (v === 'e3') {
-    // やさしい解説型: 箇条書き中心。
+    // やさしい解説型
     if (f.フック) parts.push('<div class="hook">' + escapeHtml(f.フック) + '</div>');
     parts.push('<div class="theme">' + escapeHtml(f.主題) + '</div>');
-    parts.push(explainListHtml_(f.箇条書き) ||
+    parts.push(listHtml_(f.箇条書き) ||
       (f.説明文 ? '<div class="body-text">' + escapeHtml(f.説明文) + '</div>' : ''));
     parts.push('<div class="foot">' + escapeHtml(c.catch) + '</div>');
   } else {
-    // e1 問いかけ型: キャッチを問いかけ見出しに。棒グラフ＋要点リストで紙面を埋める。
-    parts.push('<div class="q">' + escapeHtml(c.catch) + '</div>');
-    parts.push('<div class="theme">' + escapeHtml(f.主題) + '</div>');
-    var e1charts = chartHtml_(f.比較データ);
-    var e1list = explainListHtml_(f.箇条書き);
-    parts.push(e1charts);
-    parts.push(e1list);
-    if (!e1charts && !e1list && f.説明文) parts.push('<div class="body-text">' + escapeHtml(f.説明文) + '</div>');
-    parts.push('<div class="foot">' + escapeHtml(f.説明文 || f.フック || '') + '</div>');
+    // e1 問いかけ型
+    parts.push('<div class="q1">' + escapeHtml(f.主題) + '</div>');
+    parts.push('<div class="q2">' + emphasizeQ_(c.catch) + '</div>');
+    var mid = chartsHtml_(f.比較データ) || listHtml_(f.箇条書き) ||
+      (f.説明文 ? '<div class="body-text">' + escapeHtml(f.説明文) + '</div>' : '');
+    parts.push(mid);
+    parts.push('<div class="foot">' + escapeHtml(f.フック || f.説明文 || '') + '</div>');
   }
   parts.push('</div>');
   return parts.filter(Boolean).join('\n');

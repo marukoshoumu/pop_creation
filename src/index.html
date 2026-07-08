@@ -4,7 +4,7 @@
 <base target="_top">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Yusei+Magic&family=Zen+Kurenaido&family=Yomogi&family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Yuji+Syuku&family=Klee+One:wght@600&family=Hachi+Maru+Pop&family=Dela+Gothic+One&family=Mochiy+Pop+One&family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
 <?!= include('appCss'); ?>
 <?!= include('popStyles'); ?>
 </head>
@@ -61,6 +61,14 @@
   </section>
   <section data-screen="variants" hidden>
     <div class="steps"><span class="stepchip">1 入力</span><span class="stepchip">2 確認</span><span class="stepchip on">3 案をえらぶ</span><span class="stepchip">4 印刷</span></div>
+    <div class="fonttheme">
+      <span class="ft-label">文字の雰囲気</span>
+      <div class="ft-btns">
+        <button type="button" class="ft-btn on" data-font="fude">筆・和風</button>
+        <button type="button" class="ft-btn" data-font="pen">やさしい手書き</button>
+        <button type="button" class="ft-btn" data-font="pop">かわいいポップ</button>
+      </div>
+    </div>
     <div class="pick-row" id="variant-picks"></div>
     <div class="field" style="margin-top:14px"><label>選んだ案のキャッチを手直しできます</label>
       <input class="input" id="catch-edit"></div>

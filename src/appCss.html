@@ -30,15 +30,32 @@ body {
 .btn.ghost { background: #fff; color: var(--orange); border: 2px solid var(--orange); box-shadow: none; }
 .btn.mini { font-size: .72rem; padding: 5px 14px; border-radius: 7px; }
 
-.field { margin-bottom: 14px; }
-.field label { display: block; font-size: .78rem; font-weight: 700; color: #6b655c; margin-bottom: 4px; }
+.field { margin-bottom: 18px; }
+.field label { display: block; font-size: .9rem; font-weight: 700; color: #5a5245; margin-bottom: 7px; letter-spacing: .02em; }
 .field .input {
-  border: 1.5px solid #d8d2c4; border-radius: 8px; padding: 10px 14px; background: #fff;
-  font-size: .95rem;
+  display: block; width: 100%;
+  border: 1.5px solid #ddd6c6; border-radius: 12px; padding: 13px 16px; background: #fefdfb;
+  font-size: 1.02rem; color: var(--ink); font-family: inherit;
+  transition: border-color .15s, box-shadow .15s;
 }
-.field.warn .input { border-color: var(--red); border-width: 2px; }
-.field .hint { font-size: .72rem; color: var(--red); margin-top: 3px; }
-.input.area { min-height: 84px; font-size: .85rem; color: #55503f; line-height: 1.55; }
+.field .input::placeholder { color: #b5ac9b; }
+.field .input:focus { outline: none; border-color: var(--orange); box-shadow: 0 0 0 3px rgba(232,115,12,.15); background: #fff; }
+textarea.input, .input.area { min-height: 96px; line-height: 1.7; resize: vertical; }
+/* 価格など強調フィールド */
+.field.warn .input { border-color: var(--red); border-width: 2px; background: #fff8f7; font-weight: 700; }
+.field.warn label { color: var(--red); }
+.field .hint { font-size: .78rem; color: var(--red); margin-top: 5px; line-height: 1.5; }
+
+/* ===== フォントテーマ切替（3案画面） ===== */
+.fonttheme { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; flex-wrap: wrap; }
+.fonttheme .ft-label { font-size: .82rem; font-weight: 700; color: #6b655c; }
+.ft-btns { display: flex; gap: 8px; flex-wrap: wrap; }
+.ft-btn {
+  font-family: inherit; font-size: .85rem; font-weight: 700; padding: 8px 16px;
+  border: 2px solid #ddd6c6; background: #fff; color: #8a8375; border-radius: 999px; cursor: pointer;
+  transition: all .15s;
+}
+.ft-btn.on { border-color: var(--orange); background: #fdf3e7; color: var(--orange); }
 
 .choice-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 18px; }
 .choice {
