@@ -1,5 +1,5 @@
 <script>
-var state = { popType: 'product', inputText: '', audio: null, fields: null, missing: [], catches: [], selectedIndex: 0, content: null, editingBase: null };
+var state = { popType: 'product', inputText: '', audio: null, fields: null, missing: [], catches: [], selectedIndex: 0, content: null, editingBase: null, fromReprint: false };
 
 function runServer(fnName) {
   var args = Array.prototype.slice.call(arguments, 1);
@@ -74,7 +74,9 @@ function reprintPop(p) {
   if (!content) return;
   state.content = content;
   state.popType = content.type;
+  state.fromReprint = true;   // 再印刷モード: 「もどる」はホームへ
   saved_ = true;              // 再印刷では履歴を二重登録しない
+  saving_ = false;            // 前回保存中フラグの残留を防ぐ
   renderPrint();
   document.getElementById('save-status').textContent = '再印刷モード（履歴には保存済みです）';
   showScreen('print');
@@ -86,13 +88,15 @@ function editPop(p) {
   state.popType = content.type;
   state.fields = content.fields;
   state.missing = [];
+  state.fromReprint = false;  // 編集は通常フローに合流する
   saved_ = false;             // 編集後の印刷は新規行として保存
+  saving_ = false;            // 前回保存中フラグの残留を防ぐ
   renderConfirm();
   showScreen('confirm');
 }
 
 document.getElementById('btn-new').addEventListener('click', function () {
-  state = { popType: 'product', inputText: '', audio: null, fields: null, missing: [], catches: [], selectedIndex: 0, content: null, editingBase: null };
+  state = { popType: 'product', inputText: '', audio: null, fields: null, missing: [], catches: [], selectedIndex: 0, content: null, editingBase: null, fromReprint: false };
   saved_ = false;
   document.getElementById('input-text').value = '';
   document.getElementById('audio-name').textContent = '';
@@ -290,6 +294,7 @@ document.getElementById('btn-select').addEventListener('click', function () {
   var edited = document.getElementById('catch-edit').value.trim();
   if (edited) state.catches[state.selectedIndex].キャッチ = edited;
   state.content = contentFor_(state.selectedIndex);
+  state.fromReprint = false;   // 通常フロー: 「もどる」は案選択画面へ
   renderPrint();               // Task 12
   showScreen('print');
 });
@@ -358,7 +363,11 @@ document.getElementById('btn-print').addEventListener('click', function () {
   area.innerHTML = '';
   savePopWithPng_();   // 印刷ダイアログ後に保存（spec: 保存失敗でも印刷は成立）
 });
-document.getElementById('print-back').addEventListener('click', function () { saved_ = false; showScreen('variants'); });
+document.getElementById('print-back').addEventListener('click', function () {
+  if (state.fromReprint) { loadHome(); }
+  else { saved_ = false; showScreen('variants'); }
+});
+document.getElementById('print-home').addEventListener('click', loadHome);
 
 loadHome();
 </script>
