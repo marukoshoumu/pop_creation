@@ -38,12 +38,13 @@
     aspect-ratio: 180 / 70; width: 100%; padding: 3.4% 4.2%;
     display: grid; grid-template-columns: 1fr auto; grid-template-rows: auto 1fr auto; column-gap: 3%;
   }
-  .shelf .catch { grid-column: 1/3; font-size: 4.3cqw; font-weight: 700; line-height: 1.3; white-space: nowrap; overflow: hidden; }
+  .shelf .catch { grid-column: 1/3; font-size: 4cqw; font-weight: 700; line-height: 1.3; overflow: hidden;
+    display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; text-wrap: balance; }
   .shelf .catch .zip { display: inline-block; color: #fff; font-size: 3.8cqw; padding: 1px 12px; border-radius: 5px; transform: rotate(-3deg); white-space: nowrap; margin-right: 10px; vertical-align: middle; }
-  .shelf .name-wrap { grid-column: 1/2; grid-row: 2/3; align-self: center; min-width: 0; }
-  .shelf .name { font-size: 10.5cqw; line-height: 1; white-space: nowrap; }
+  .shelf .name-wrap { grid-column: 1/2; grid-row: 2/3; align-self: center; min-width: 0; overflow: hidden; }
+  .shelf .name { font-size: 8.5cqw; line-height: 1; white-space: nowrap; }
   .shelf .reading { font-size: 2.9cqw; color: #7a6f57; margin-top: 5px; }
-  .shelf .price { grid-column: 2/3; grid-row: 2/3; align-self: center; justify-self: end; font-size: 13.5cqw; line-height: .82; white-space: nowrap; text-align: right; }
+  .shelf .price { grid-column: 2/3; grid-row: 2/3; align-self: center; justify-self: end; font-size: 12cqw; line-height: .82; white-space: nowrap; text-align: right; }
   .shelf .price .yen { font-size: .36em; }
   .shelf .price .tax { display: block; font-size: .26em; font-family: "Klee One", sans-serif; color: #8a7a55; margin-top: 2px; }
   .shelf .foot { grid-column: 1/3; grid-row: 3/4; align-self: end; display: flex; gap: 20px; font-size: 3.4cqw; color: #5a5030; }
@@ -66,7 +67,7 @@
     display: flex; flex-direction: column; gap: 2%;
   }
   /* 中央コンテンツ（グラフ/カード/リスト）を残り高さいっぱいに広げ余白を消す */
-  .a4 .a4-mid { flex: 1; display: flex; flex-direction: column; justify-content: center; gap: 4%; }
+  .a4 .a4-mid { flex: 1; min-height: 0; display: flex; flex-direction: column; justify-content: safe center; gap: 4%; }
   /* 基本背景（装飾テーマ未指定/素朴のとき） */
   .a4.e1 { background: linear-gradient(170deg,#fbf6e6,#f1e7cd); }
   .a4.e2 { background: var(--paper-white); }
@@ -105,17 +106,17 @@
   .a4 .tape { position: absolute; top: -1cqw; width: 22cqw; height: 6.5cqw; background: rgba(230,200,120,.55); box-shadow: 0 1px 3px rgba(0,0,0,.1); z-index: 3; }
   .a4 .tape.l { left: 7cqw; transform: rotate(-4deg); } .a4 .tape.r { right: 7cqw; transform: rotate(3deg); }
 
-  /* 共通見出し */
-  .a4 .q1 { text-align: center; font-size: 7cqw; font-weight: 700; color: #3a3226; }
+  /* 共通見出し（長文キャッチでもはみ出さない控えめサイズ＋balance改行） */
+  .a4 .q1 { text-align: center; font-size: 5cqw; font-weight: 700; color: #3a3226; text-wrap: balance; }
   .a4 .q1 .em { font-size: 2.2em; color: var(--green); vertical-align: -.12em; }
-  .a4 .q2 { text-align: center; font-size: 11cqw; color: #3a3226; line-height: 1.1; }
+  .a4 .q2 { text-align: center; font-size: 6.8cqw; color: #3a3226; line-height: 1.35; text-wrap: balance; }
   .a4 .q2 .qm { color: var(--orange); }
-  .a4 .theme { text-align: center; font-size: 11cqw; line-height: 1.12; color: var(--ink); }
+  .a4 .theme { text-align: center; font-size: 7cqw; line-height: 1.3; color: var(--ink); text-wrap: balance; }
   .a4.e2 .theme { color: var(--ink); }
   .a4.e3 .theme { color: var(--green); text-align: left; }
-  .a4 .hook { font-size: 4.4cqw; color: #5a5030; }
-  .a4 .body-text { font-size: 3.7cqw; line-height: 1.75; color: #3a3226; }
-  .a4 .foot { text-align: center; font-size: 6.4cqw; color: var(--ink); line-height: 1.5; }
+  .a4 .hook { font-size: 4.4cqw; color: #5a5030; text-wrap: balance; }
+  .a4 .body-text { font-size: 3.5cqw; line-height: 1.7; color: #3a3226; text-wrap: pretty; }
+  .a4 .foot { text-align: center; font-size: 5.2cqw; color: var(--ink); line-height: 1.5; text-wrap: balance; }
   .a4 .foot .mk, .a4 .body-text .mk { background: linear-gradient(transparent 58%,#ffe08a 58%); }
 
   /* 棒グラフ */
@@ -125,7 +126,7 @@
   .chart.fe .metric { background: var(--pink); }
   .chart .mult { font-size: 13cqw; color: var(--green); line-height: .9; margin: 3% 0 1%; transform: rotate(-4deg); white-space: nowrap; }
   .chart.fe .mult { color: var(--pink); }
-  .chart .bars { display: flex; align-items: flex-end; justify-content: center; gap: 14%; height: 46cqw; border-bottom: 3px solid var(--ink); padding: 0 6%; }
+  .chart .bars { display: flex; align-items: flex-end; justify-content: center; gap: 14%; height: 38cqw; border-bottom: 3px solid var(--ink); padding: 0 6%; }
   .chart .bar { width: 36%; border: 2.5px solid var(--ink); border-bottom: none; }
   .chart .bar.hi { background: repeating-linear-gradient(45deg,var(--bar-green) 0 6px,#a8d99a 6px 12px); }
   .chart.fe .bar.hi { background: repeating-linear-gradient(45deg,var(--bar-pink) 0 6px,#f7c3d5 6px 12px); }
