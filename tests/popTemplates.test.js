@@ -68,6 +68,23 @@ test('renderPop(explain): 比較値 0 の項目は0除算を防ぎ Infinity/NaN 
   assert.ok(!html.includes('class="charts"'), '比較値0の項目はグラフに出ないはず');
 });
 
+test('renderPop(explain): 対象値0・比較値正（0倍）でも Infinity/NaN を出さず比較バーの高さが有効な数値%になる', () => {
+  const html = t.renderPop({
+    ...explainContent,
+    fields: {
+      ...explainContent.fields,
+      比較データ: [{ ラベル: 'カフェイン', 対象値: 0, 比較値: 100, 単位: '倍', 補足: '' }],
+    },
+  });
+  assert.ok(!html.includes('Infinity'), 'Infinity が出力されている');
+  assert.ok(!html.includes('NaN'), 'NaN が出力されている');
+  assert.ok(html.includes('class="charts"'), '対象値0でもグラフ自体は出るはず');
+  const m = html.match(/bar w" style="height:([\d.]+)%"/);
+  assert.ok(m, '比較バーの height が数値%で出力されていない');
+  const h = Number(m[1]);
+  assert.ok(Number.isFinite(h) && h > 0 && h <= 96, `比較バー高さが不正: ${m[1]}`);
+});
+
 test('renderPop(explain): 比較データ 0 件ならグラフブロックを出さない', () => {
   const html = t.renderPop({ ...explainContent, fields: { ...explainContent.fields, 比較データ: [] } });
   assert.ok(!html.includes('class="charts"'));
