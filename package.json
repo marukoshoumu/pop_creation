@@ -1,0 +1,12 @@
+{
+  "name": "pop-creation",
+  "private": true,
+  "scripts": {
+    "test": "node --test tests/*.test.js",
+    "build": "bash scripts/build-shared.sh",
+    "push": "npm run build && npx clasp push"
+  },
+  "devDependencies": {
+    "@google/clasp": "^2.4.2"
+  }
+}

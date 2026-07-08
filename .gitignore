@@ -3,6 +3,11 @@
 .env
 .clasprc.json
 
+# clasp ローカル認証
+~/.clasprc.json
+
 # 依存・生成物
 node_modules/
 *.log
+
+# 自動生成物はコミットする（GAS へ push されるため）ので除外しない
