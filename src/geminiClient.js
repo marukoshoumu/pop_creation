@@ -51,7 +51,13 @@ function callGemini_(payload) {
 }
 
 function extractContent(input, popType) {
-  var extra = (getSettings()['プロンプト追加指示'] || '');
+  // spec: AIと保存は独立して壊れうるべき。Spreadsheet障害で抽出まで巻き添えにしない
+  var extra = '';
+  try {
+    extra = getSettings()['プロンプト追加指示'] || '';
+  } catch (e) {
+    Logger.log('設定取得スキップ（プロンプト追加指示なしで続行）: ' + e.message);
+  }
   var prompt = buildExtractPrompt(popType, extra);
   var schema = popType === 'product' ? EXTRACT_SCHEMA_PRODUCT : EXTRACT_SCHEMA_EXPLAIN;
   var reqOpts = { prompt: prompt, schema: schema };

@@ -155,10 +155,23 @@ function processInput() {
     })
     .catch(function (e) {
       hideLoading();
-      showError(e.message, processInput);  // spec: 入力は画面に保持したままリトライ可能
+      // spec: AIが全滅しても手入力→テンプレート→印刷の経路は常に生きている
+      showError(e.message + ' うまくいかない場合は「AIを使わず手入力する」もご利用いただけます。', processInput);
     });
 }
 document.getElementById('btn-process').addEventListener('click', processInput);
+
+/** AIを使わず、空フォームから手入力で確認画面へ進む（spec: AI全滅時の迂回路） */
+function startManualEntry() {
+  state.inputText = document.getElementById('input-text').value.trim();
+  state.fields = state.popType === 'product'
+    ? { 商品名: '', 補足: '', 価格: null, 容量: '', 生産者: '', アピールポイント: [] }
+    : { フック: '', 主題: '', 説明文: '', 箇条書き: [], 比較データ: [] };
+  state.missing = [];
+  renderConfirm();
+  showScreen('confirm');
+}
+document.getElementById('btn-manual').addEventListener('click', startManualEntry);
 
 /* ===== 画面3: 確認・編集 ===== */
 function fieldRow_(key, label, value, opts) {
@@ -319,9 +332,13 @@ function popRecord_() {
 }
 
 function capturePng_() {
+  // spec: html2canvas 未ロード(CDN障害等)でも同期throwさせず、PNG無しで保存を継続する
+  if (typeof html2canvas !== 'function') return Promise.resolve(null);
   var area = document.getElementById('print-area');
   area.innerHTML = renderPop(state.content);
-  return html2canvas(area.firstElementChild, { scale: 1.5 })
+  return Promise.resolve().then(function () {
+    return html2canvas(area.firstElementChild, { scale: 1.5 });
+  })
     .then(function (canvas) {
       area.innerHTML = '';
       return canvas.toDataURL('image/png').split(',')[1];
@@ -340,7 +357,10 @@ function savePopWithPng_() {
   saving_ = true;
   var status = document.getElementById('save-status');
   status.textContent = '履歴に保存しています…';
-  return capturePng_().then(function (png) {
+  // Promise.resolve().then で包み、capturePng_ 側の万一の同期throwも catch に必ず流す
+  return Promise.resolve().then(function () {
+    return capturePng_();
+  }).then(function (png) {
     return runServer('api_savePop', popRecord_(), png).then(function (r) {
       saved_ = true;
       saving_ = false;
