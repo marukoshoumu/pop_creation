@@ -89,11 +89,11 @@ document.getElementById('audio-file').addEventListener('change', function () {
   var f = this.files[0];
   if (!f) return;
   var ext = f.name.split('.').pop().toLowerCase();
-  var mime = AUDIO_TYPES[ext] || f.type;
-  if (!AUDIO_TYPES[ext] && String(f.type).indexOf('audio/') !== 0) {
+  if (!AUDIO_TYPES[ext]) {
     showError('対応していないファイル形式です(m4a / mp3 / wav / aac / ogg / flac)。テキスト入力もご利用いただけます。');
     this.value = ''; return;
   }
+  var mime = AUDIO_TYPES[ext];
   if (f.size > AUDIO_MAX_BYTES) {
     showError('ファイルが大きすぎます(15MBまで)。短く録り直すか、テキスト入力をご利用ください。');
     this.value = ''; return;
