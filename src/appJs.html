@@ -69,5 +69,62 @@ function editPop(p) { console.log('edit', p.ID); }
 
 document.getElementById('btn-new').addEventListener('click', function () { showScreen('input'); });
 
+/* ===== 画面2: 入力 ===== */
+var AUDIO_MAX_BYTES = 15 * 1024 * 1024;
+var AUDIO_TYPES = { m4a: 'audio/mp4', mp3: 'audio/mpeg', wav: 'audio/wav', aac: 'audio/aac', ogg: 'audio/ogg', flac: 'audio/flac' };
+
+function setPopType(t) {
+  state.popType = t;
+  document.getElementById('choice-product').classList.toggle('on', t === 'product');
+  document.getElementById('choice-explain').classList.toggle('on', t === 'explain');
+}
+document.getElementById('choice-product').addEventListener('click', function () { setPopType('product'); });
+document.getElementById('choice-explain').addEventListener('click', function () { setPopType('explain'); });
+document.getElementById('input-back').addEventListener('click', loadHome);
+
+document.getElementById('audio-drop').addEventListener('click', function () {
+  document.getElementById('audio-file').click();
+});
+document.getElementById('audio-file').addEventListener('change', function () {
+  var f = this.files[0];
+  if (!f) return;
+  var ext = f.name.split('.').pop().toLowerCase();
+  var mime = AUDIO_TYPES[ext] || f.type;
+  if (!AUDIO_TYPES[ext] && String(f.type).indexOf('audio/') !== 0) {
+    showError('対応していないファイル形式です(m4a / mp3 / wav / aac / ogg / flac)。テキスト入力もご利用いただけます。');
+    this.value = ''; return;
+  }
+  if (f.size > AUDIO_MAX_BYTES) {
+    showError('ファイルが大きすぎます(15MBまで)。短く録り直すか、テキスト入力をご利用ください。');
+    this.value = ''; return;
+  }
+  var reader = new FileReader();
+  reader.onload = function () {
+    state.audio = { mimeType: mime, base64: String(reader.result).split(',')[1] };
+    document.getElementById('audio-name').textContent = '✓ ' + f.name;
+  };
+  reader.readAsDataURL(f);
+});
+
+function processInput() {
+  state.inputText = document.getElementById('input-text').value.trim();
+  if (!state.audio && !state.inputText) {
+    showError('音声ファイルかテキストのどちらかを入れてください。'); return;
+  }
+  showLoading('AIがインタビューを整理しています…(音声は1〜2分かかることがあります)');
+  runServer('api_processInput', { popType: state.popType, text: state.inputText || null, audio: state.audio })
+    .then(function (r) {
+      hideLoading();
+      state.fields = r.fields; state.missing = r.missing;
+      renderConfirm();          // Task 10
+      showScreen('confirm');
+    })
+    .catch(function (e) {
+      hideLoading();
+      showError(e.message, processInput);  // spec: 入力は画面に保持したままリトライ可能
+    });
+}
+document.getElementById('btn-process').addEventListener('click', processInput);
+
 loadHome();
 </script>
