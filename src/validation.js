@@ -56,7 +56,12 @@ function validateExplainFields(obj) {
         補足: asString_(d['補足']),
       };
     })
-    .filter(function (d) { return d.ラベル && d.対象値 !== null && d.比較値 !== null; });
+    .filter(function (d) {
+      // asNumber_ は数値化不能なら null を返す。isFinite(null) は true になる（0 と等価扱い）ため
+      // まず null チェックしてから isFinite・0除算防止（比較値 > 0）を確認する
+      return d.ラベル && d.対象値 !== null && d.比較値 !== null &&
+        isFinite(d.対象値) && isFinite(d.比較値) && d.比較値 > 0;
+    });
   const fields = {
     フック: asString_(o['フック']),
     主題: asString_(o['主題']),

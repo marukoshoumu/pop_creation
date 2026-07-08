@@ -51,3 +51,16 @@ test('validateExplainFields: 比較データの数値検証', () => {
   assert.strictEqual(r.fields.比較データ.length, 1);
   assert.strictEqual(r.fields.比較データ[0].ラベル, 'ビタミンE');
 });
+
+test('validateExplainFields: 比較値 0 は0除算になるため比較データから除外される', () => {
+  const r = v.validateExplainFields({
+    フック: '', 主題: '糖質オフのいいところ', 説明文: '…',
+    箇条書き: [],
+    比較データ: [
+      { ラベル: '糖質', 対象値: 5, 比較値: 0, 単位: 'g', 補足: '' },
+      { ラベル: 'ビタミンE', 対象値: 4, 比較値: 1, 単位: '倍', 補足: '' },
+    ],
+  });
+  assert.strictEqual(r.fields.比較データ.length, 1);
+  assert.strictEqual(r.fields.比較データ[0].ラベル, 'ビタミンE');
+});

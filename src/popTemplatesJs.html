@@ -37,11 +37,14 @@ function renderProduct_(c) {
 
 function chartHtml_(list) {
   if (!list || list.length === 0) return '';
-  var items = list.slice(0, 2).map(function (d) {
+  var items = list.filter(function (d) {
+    // 0除算・不正値ガード: 比較値が有限かつ 0 超でない項目はグラフに出さない
+    return isFinite(d.対象値) && isFinite(d.比較値) && d.比較値 > 0;
+  }).slice(0, 2).map(function (d) {
     var ratio = d.対象値 / d.比較値;
     var mainH = 96;                                    // 対象バーは常に 96%
     var baseH = Math.max(10, Math.round(96 / ratio));  // 比較バーは比率で縮小
-    var label = escapeHtml(d.対象値 / d.比較値) + escapeHtml(d.単位 || '倍') + '！';
+    var label = escapeHtml(ratio) + escapeHtml(d.単位 || '倍') + '！';
     return [
       '<div class="chart">',
       '  <div class="bars">',
@@ -52,6 +55,7 @@ function chartHtml_(list) {
       '</div>',
     ].join('\n');
   });
+  if (items.length === 0) return '';
   return '<div class="charts">' + items.join('\n') + '</div>';
 }
 

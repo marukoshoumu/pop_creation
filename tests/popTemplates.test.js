@@ -55,6 +55,19 @@ test('renderPop(explain): 比較データが棒グラフ HTML になり数値が
   assert.ok(html.includes('height:96%') || html.includes('height: 96%'), '対象バーの高さが計算されていない');
 });
 
+test('renderPop(explain): 比較値 0 の項目は0除算を防ぎ Infinity/NaN を出さない', () => {
+  const html = t.renderPop({
+    ...explainContent,
+    fields: {
+      ...explainContent.fields,
+      比較データ: [{ ラベル: '糖質', 対象値: 5, 比較値: 0, 単位: 'g', 補足: '' }],
+    },
+  });
+  assert.ok(!html.includes('Infinity'), 'Infinity が出力されている');
+  assert.ok(!html.includes('NaN'), 'NaN が出力されている');
+  assert.ok(!html.includes('class="charts"'), '比較値0の項目はグラフに出ないはず');
+});
+
 test('renderPop(explain): 比較データ 0 件ならグラフブロックを出さない', () => {
   const html = t.renderPop({ ...explainContent, fields: { ...explainContent.fields, 比較データ: [] } });
   assert.ok(!html.includes('class="charts"'));
