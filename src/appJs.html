@@ -153,9 +153,9 @@ function renderConfirm() {
       fieldRow_('主題', '主題', f.主題) +
       fieldRow_('説明文', '説明文', f.説明文, { textarea: true }) +
       fieldRow_('箇条書き', '箇条書き（1行1つ）', f.箇条書き.join('\n'), { textarea: true }) +
-      fieldRow_('比較データ', '比較データ（例: ビタミンE,4,1,倍 を1行1つ）',
-        f.比較データ.map(function (d) { return [d.ラベル, d.対象値, d.比較値, d.単位].join(','); }).join('\n'),
-        { textarea: true, hint: 'ラベル,対象値,比較値,単位 の順。グラフはこの数値どおりに描かれます。' });
+      fieldRow_('比較データ', '比較データ（例: ビタミンE,4,1,倍,他社比 を1行1つ）',
+        f.比較データ.map(function (d) { return [d.ラベル, d.対象値, d.比較値, d.単位, d.補足 || ''].join(','); }).join('\n'),
+        { textarea: true, hint: 'ラベル,対象値,比較値,単位,補足 の順。グラフはこの数値どおりに描かれます。' });
   }
   document.getElementById('confirm-form').innerHTML = html;
   document.getElementById('missing-note').textContent =
@@ -172,6 +172,7 @@ function collectConfirm_() {
     var priceRaw = get('価格');
     if (!get('商品名')) { showError('商品名は必須です。'); return null; }
     if (priceRaw === '' || isNaN(Number(priceRaw))) { showError('価格は数字で入力してください（必須）。'); return null; }
+    if (Number(priceRaw) < 0) { showError('価格は0以上の数字で入力してください。'); return null; }
     return {
       商品名: get('商品名'), 補足: get('補足'), 価格: Number(priceRaw),
       容量: get('容量'), 生産者: get('生産者'), アピールポイント: lines('アピールポイント'),
@@ -182,8 +183,8 @@ function collectConfirm_() {
     フック: get('フック'), 主題: get('主題'), 説明文: get('説明文'), 箇条書き: lines('箇条書き'),
     比較データ: lines('比較データ').map(function (l) {
       var p = l.split(',');
-      return { ラベル: p[0] || '', 対象値: Number(p[1]), 比較値: Number(p[2] || 1), 単位: p[3] || '倍', 補足: '' };
-    }).filter(function (d) { return d.ラベル && isFinite(d.対象値) && isFinite(d.比較値); }),
+      return { ラベル: p[0] || '', 対象値: Number(p[1]), 比較値: Number(p[2] || 1), 単位: p[3] || '倍', 補足: (p[4] || '').trim() };
+    }).filter(function (d) { return d.ラベル && isFinite(d.対象値) && d.対象値 >= 0 && isFinite(d.比較値) && d.比較値 > 0; }),
   };
 }
 
