@@ -65,8 +65,15 @@ function loadHome() {
 
 /* ===== 履歴: 再印刷・編集 ===== */
 function restoreContent_(p) {
-  try { return JSON.parse(p.内容JSON); }
+  var content;
+  try { content = JSON.parse(p.内容JSON); }
   catch (e) { showError('このPOPのデータを読み込めませんでした。'); return null; }
+  // 空/壊れた履歴行（例: スモークテスト行の {}）を弾く
+  if (!content || (content.type !== 'product' && content.type !== 'explain') || !content.fields) {
+    showError('このPOPは再表示できません（テスト用データか、古い形式の可能性があります）。');
+    return null;
+  }
+  return content;
 }
 
 function reprintPop(p) {

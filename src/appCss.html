@@ -43,15 +43,16 @@ body {
 .choice-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 18px; }
 .choice {
   border: 2px solid #d8d2c4; border-radius: 12px; padding: 14px; text-align: center;
-  background: #fff; font-size: .88rem;
+  background: #fff; font-size: .88rem; cursor: pointer;
 }
 .choice .ic { font-size: 1.5rem; display: block; margin-bottom: 4px; }
 .choice.on { border-color: var(--orange); background: #fdf3e7; font-weight: 700; }
 .choice .sub2 { display: block; font-size: .7rem; color: #8a8375; font-weight: 400; margin-top: 3px; }
 .dropzone {
   border: 2px dashed #c9c2b2; border-radius: 12px; padding: 22px; text-align: center;
-  color: #8a8375; font-size: .85rem; background: #faf8f3;
+  color: #8a8375; font-size: .85rem; background: #faf8f3; cursor: pointer;
 }
+.pick { cursor: pointer; }
 .ai-note {
   background: #fdf3e7; border-left: 4px solid var(--orange); border-radius: 0 8px 8px 0;
   padding: 10px 16px; font-size: .82rem; margin-bottom: 18px;
