@@ -62,18 +62,50 @@ body {
 .history-card .meta { font-size: .72rem; color: #6b655c; margin: 8px 0 6px; line-height: 1.4; }
 .history-card .meta b { color: var(--ink); font-size: .8rem; }
 
-.pick-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+/* auto-fit: 案が1〜2件でも空列を作らず左詰め。最大幅は3列時の実カード幅に合わせて頭打ち
+   （1fr にすると案が1件のときカードが横幅いっぱいに伸びて余白過多になるため固定上限にする） */
+.pick-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 273px)); justify-content: start; gap: 14px; }
 .pick { border: 2px solid #d8d2c4; border-radius: 12px; padding: 10px; background: #fff; text-align: center; }
 .pick.on { border-color: var(--orange); background: #fdf3e7; box-shadow: 0 0 0 3px rgba(232,115,12,.15); }
 .pick .radio { font-size: .78rem; margin-top: 8px; color: #6b655c; }
 .pick.on .radio { color: var(--orange); font-weight: 700; }
 .print-note { font-size: .8rem; color: #6b655c; background: #faf8f3; border-radius: 8px; padding: 12px 14px; margin-top: 14px; }
 
-.pick-preview .pop { width: 100%; pointer-events: none; }
-.pick-preview .pop.a4 { font-size: 62.5%; }  /* サムネ縮小表示 */
+/* ===== サムネ縮小（transform scale方式） =====
+   popStyles.html のフォントは clamp(px, Nvw, px) でビューポート基準のため、
+   親の font-size を変えても縮小できない。実レンダリングを基準幅720pxで描画し、
+   transform: scale() でカードに収まる倍率まで丸ごと縮小する。
+   0.34 = 720幅で描いた実物を 3列時の実カード内寸（約253px）に収める倍率（実測調整）。
+   .pick-preview の高さは 720幅時点の高さ×倍率を明示指定して余白を潰す
+   （商品型 shelf=180/70、説明型 a4=210/297 でアスペクト比が異なるため :has() で出し分け）。 */
+.pick-preview {
+  --pick-scale: 0.34;
+  overflow: hidden;
+}
+.pick-preview .pop {
+  width: 720px;
+  transform-origin: top left;
+  /* !important: popStyles.html の .shelf.v1/.v2/.v3 は rotate() 指定を持ち、
+     クラス2つ（.shelf.v1 等）で本ルール（.pick-preview .pop = クラス2つ）と詳細度が同点。
+     popStyles.html は appCss.html より後に読み込まれるため、通常は rotate() が後勝ちしてしまい
+     縮小が効かなくなる。サムネ用途に限定してスケールを必ず勝たせるため !important で上書きする。 */
+  transform: scale(var(--pick-scale)) !important;
+  pointer-events: none;
+}
+.pick-preview:has(.pop.shelf) { height: calc(280px * var(--pick-scale)); }     /* 720 * 70/180 */
+.pick-preview:has(.pop.a4) { height: calc(1017.14px * var(--pick-scale)); }    /* 720 * 297/210 */
 
 @media (max-width: 640px) {
-  .history-grid, .pick-row { grid-template-columns: 1fr; }
+  /* minmax(0, 1fr) であって単なる 1fr ではない点に注意:
+     bare 1fr は minmax(auto, 1fr) 相当になり、"auto" 最小サイズはグリッドアイテムの
+     内容依存の自動最小サイズ計算を発動させる。.pick-preview 配下の .pop は
+     width:720px を明示指定しているため、auto のままだとそのサイズがそのまま
+     グリッドトラックの最小幅として伝播し、カードが 720px 相当まで肥大化してしまう
+     （scale() は見た目だけ縮小するがレイアウト上のサイズは変えないため）。
+     最小値を 0 に明示することでこの自動最小サイズ計算を無効化し、正しく画面幅に収まる。 */
+  .history-grid, .pick-row { grid-template-columns: minmax(0, 1fr); }
+  /* 1列表示になりカード幅が広がるため、縮小率も上げてサムネ周りの余白を詰める */
+  .pick-preview { --pick-scale: 0.44; }
 }
 </style>
 <style>
