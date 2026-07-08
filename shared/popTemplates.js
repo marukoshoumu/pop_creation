@@ -1,0 +1,81 @@
+/**
+ * POP テンプレート（純粋関数）。ブラウザ（build 生成の popTemplatesJs.html）と
+ * Node テストの両方から使う。GAS サーバーでは使わない。
+ * 【生命線】fields の値は escapeHtml 以外の加工をせずそのまま出力する。
+ */
+
+function escapeHtml(s) {
+  return String(s == null ? '' : s)
+    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+}
+
+function priceHtml_(価格) {
+  if (価格 === null || 価格 === undefined || 価格 === '') return '';
+  return '<span class="price">' + escapeHtml(価格) +
+    '<span class="yen">円</span><span class="tax">（税込）</span></span>';
+}
+
+function renderProduct_(c) {
+  var f = c.fields;
+  return [
+    '<div class="pop shelf ' + escapeHtml(c.variant) + '">',
+    '  <div class="catch">' + escapeHtml(c.catch) + '</div>',
+    '  <div class="name-row"><span class="name">' + escapeHtml(f.商品名) + '</span>',
+    f.補足 ? '  <span class="reading">' + escapeHtml(f.補足) + '</span>' : '',
+    '  </div>',
+    '  <div class="bottom">',
+    '    <span class="producer">' + escapeHtml(f.生産者) + '</span>',
+    '    <span class="amount">' + escapeHtml(f.容量) + '</span>',
+    '    ' + priceHtml_(f.価格),
+    '  </div>',
+    '</div>',
+  ].join('\n');
+}
+
+function chartHtml_(list) {
+  if (!list || list.length === 0) return '';
+  var items = list.slice(0, 2).map(function (d) {
+    var ratio = d.対象値 / d.比較値;
+    var mainH = 96;                                    // 対象バーは常に 96%
+    var baseH = Math.max(10, Math.round(96 / ratio));  // 比較バーは比率で縮小
+    var label = escapeHtml(d.対象値 / d.比較値) + escapeHtml(d.単位 || '倍') + '！';
+    return [
+      '<div class="chart">',
+      '  <div class="bars">',
+      '    <div class="bar g" style="height:' + mainH + '%"><span class="x">' + label + '</span></div>',
+      '    <div class="bar w" style="height:' + baseH + '%"></div>',
+      '  </div>',
+      '  <div class="cap">' + escapeHtml(d.ラベル) + (d.補足 ? '（' + escapeHtml(d.補足) + '）' : '') + '</div>',
+      '</div>',
+    ].join('\n');
+  });
+  return '<div class="charts">' + items.join('\n') + '</div>';
+}
+
+function renderExplain_(c) {
+  var f = c.fields;
+  var 箇条 = (f.箇条書き || []).map(function (s) {
+    return '<li><span class="mark">✔</span><span>' + escapeHtml(s) + '</span></li>';
+  }).join('\n');
+  return [
+    '<div class="pop a4 ' + escapeHtml(c.variant) + '">',
+    f.フック ? '  <div class="hook">' + escapeHtml(f.フック) + '</div>' : '',
+    '  <div class="theme">' + escapeHtml(f.主題) + '</div>',
+    '  <div class="q">' + escapeHtml(c.catch) + '</div>',
+    chartHtml_(f.比較データ),
+    f.説明文 ? '  <div class="body-text">' + escapeHtml(f.説明文) + '</div>' : '',
+    箇条 ? '  <ul class="list">' + 箇条 + '</ul>' : '',
+    '</div>',
+  ].join('\n');
+}
+
+function renderPop(content) {
+  if (content.type === 'product') return renderProduct_(content);
+  if (content.type === 'explain') return renderExplain_(content);
+  throw new Error('不明な POP 種別: ' + content.type);
+}
+
+if (typeof module !== 'undefined') {
+  module.exports = { renderPop, escapeHtml };
+}

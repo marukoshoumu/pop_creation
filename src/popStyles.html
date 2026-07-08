@@ -1,0 +1,166 @@
+<style>
+  :root {
+    --ink: #2b2620;
+    --paper-cream: #f5eeda;
+    --paper-white: #fdfcf8;
+    --paper-beige: #f0e8d8;
+    --orange: #e8730c;
+    --red: #d33a2c;
+    --green: #4a7c3f;
+    --pink: #e589a8;
+    --bar-green: #7cbf6b;
+    --bar-pink: #ef9db8;
+  }
+
+  /* ===== POP 共通（手書き風の紙） ===== */
+  .pop {
+    position: relative;
+    box-shadow: 0 3px 14px rgba(60,50,30,.18);
+    overflow: hidden;
+  }
+  .pop .tape {
+    position: absolute; top: -8px; left: 50%; transform: translateX(-50%) rotate(-2deg);
+    width: 90px; height: 26px; background: rgba(255,255,255,.55);
+    border-left: 1px dashed rgba(0,0,0,.08); border-right: 1px dashed rgba(0,0,0,.08);
+    box-shadow: 0 1px 3px rgba(0,0,0,.08);
+  }
+
+  /* ===== 商品型（棚札・横長 180×70mm 想定） ===== */
+  .shelf {
+    aspect-ratio: 180 / 70;
+    width: 100%;
+    padding: 3.2% 4%;
+    display: grid;
+    grid-template-rows: auto 1fr auto;
+  }
+  .shelf .catch { font-size: clamp(14px, 2.6vw, 22px); }
+  .shelf .name-row { display: flex; align-items: baseline; gap: 4%; align-self: center; width: 100%; }
+  .shelf .name { font-size: clamp(26px, 5.4vw, 46px); font-weight: 700; }
+  .shelf .reading { font-size: clamp(11px, 1.6vw, 14px); color: #6b655c; }
+  .shelf .bottom { display: flex; align-items: baseline; justify-content: space-between; }
+  .shelf .price { font-size: clamp(30px, 6vw, 52px); font-weight: 700; line-height: 1; }
+  .shelf .price .yen, .shelf .price .tax { font-size: .38em; font-weight: 400; }
+  .shelf .amount { font-size: clamp(13px, 2vw, 17px); }
+  .shelf .producer { font-size: clamp(11px, 1.7vw, 14px); }
+
+  /* 案1: 王道マーカー（クラフト紙・黒筆文字＋オレンジ価格） */
+  .shelf.v1 {
+    background:
+      repeating-linear-gradient(0deg, transparent 0 34px, rgba(120,90,40,.045) 34px 35px),
+      var(--paper-cream);
+    font-family: "Yusei Magic", "Hiragino Maru Gothic ProN", sans-serif;
+    transform: rotate(-.4deg);
+  }
+  .shelf.v1 .catch { color: var(--orange); }
+  .shelf.v1 .catch .plain { color: var(--ink); }
+  .shelf.v1 .price { color: var(--orange); transform: rotate(-1.2deg); }
+
+  /* 案2: 赤強調（白地・赤マーカー・波線） */
+  .shelf.v2 {
+    background: var(--paper-white);
+    font-family: "Zen Kurenaido", "Hiragino Maru Gothic ProN", sans-serif;
+    border: 3px solid var(--red);
+    border-radius: 255px 15px 225px 15px / 15px 225px 15px 255px;
+    transform: rotate(.35deg);
+  }
+  .shelf.v2 .catch { color: var(--ink); }
+  .shelf.v2 .catch .hl {
+    background: linear-gradient(transparent 62%, rgba(211,58,44,.28) 62%);
+    font-weight: 700;
+  }
+  .shelf.v2 .name { text-decoration: underline wavy rgba(211,58,44,.5) 2px; text-underline-offset: 6px; }
+  .shelf.v2 .price { color: var(--red); }
+
+  /* 案3: やさしい緑（ベージュ・緑・素朴） */
+  .shelf.v3 {
+    background: var(--paper-beige);
+    font-family: "Yomogi", "Hiragino Maru Gothic ProN", sans-serif;
+    outline: 2px dashed rgba(74,124,63,.55); outline-offset: -8px;
+    transform: rotate(-.25deg);
+  }
+  .shelf.v3 .catch { color: var(--green); font-weight: 700; }
+  .shelf.v3 .price { color: var(--ink); }
+  .shelf.v3 .price .num-strong { color: var(--green); }
+
+  /* ===== 説明型（A4 縦 210×297mm 想定） ===== */
+  .a4 {
+    aspect-ratio: 210 / 297;
+    width: 100%;
+    padding: 7% 7.5%;
+    display: flex; flex-direction: column; gap: 3.5%;
+  }
+  .a4 .hook { font-size: clamp(13px, 1.5vw, 17px); }
+  .a4 .theme { font-size: clamp(20px, 2.3vw, 27px); font-weight: 700; line-height: 1.3; }
+  .a4 .body-text { font-size: clamp(11px, 1.15vw, 13.5px); }
+  .a4 .foot { margin-top: auto; font-size: clamp(12px, 1.3vw, 15px); font-weight: 700; text-align: center; }
+
+  /* 棒グラフ（CSSで正確に） */
+  .charts { display: grid; grid-template-columns: 1fr 1fr; gap: 6%; margin: 1% 0; }
+  .chart { text-align: center; font-size: clamp(9px, .95vw, 11px); }
+  .chart .bars { display: flex; align-items: flex-end; justify-content: center; gap: 14%; height: 74px; border-bottom: 2px solid var(--ink); padding: 0 8%; margin-top: 1.5em; }
+  .chart .bar { width: 30%; border: 2px solid var(--ink); border-bottom: none; position: relative; border-radius: 4px 4px 0 0; }
+  .chart .bar .x { position: absolute; top: -1.6em; left: 50%; transform: translateX(-50%); font-weight: 700; white-space: nowrap; font-size: 1.25em; }
+  .chart .legend { display: flex; justify-content: center; gap: 14%; padding: 0 8%; margin-top: 4px; }
+  .chart .legend span { width: 30%; }
+  .chart .cap { margin-top: 6px; color: #55503f; }
+  .bar.g { background: repeating-linear-gradient(45deg, var(--bar-green) 0 6px, #a3d694 6px 12px); }
+  .bar.p { background: repeating-linear-gradient(45deg, var(--bar-pink) 0 6px, #f7c3d5 6px 12px); }
+  .bar.w { background: #fff; }
+
+  /* 案1: 問いかけ型 */
+  .a4.e1 { background: var(--paper-cream); font-family: "Zen Kurenaido", sans-serif; gap: 2%; padding: 5% 7% 5%; }
+  .a4.e1 .foot { font-size: clamp(11px, 1.15vw, 13.5px); }
+  .a4.e1 .hook { font-weight: 700; }
+  .a4.e1 .theme .big { font-size: 1.5em; }
+  .a4.e1 .theme { text-align: center; }
+  .a4.e1 .q { color: var(--ink); text-align: center; font-size: clamp(15px, 1.8vw, 20px); font-weight: 700; }
+  .a4.e1 .q .qmark { color: var(--orange); font-size: 1.4em; }
+  .a4.e1 .foot .hl { background: linear-gradient(transparent 60%, rgba(232,115,12,.3) 60%); }
+
+  /* 案2: 数字インパクト型 */
+  .a4.e2 { background: var(--paper-white); font-family: "Yusei Magic", sans-serif; }
+  .a4.e2 .theme { text-align: center; }
+  .a4.e2 .numbers { display: grid; grid-template-columns: 1fr 1fr; gap: 5%; text-align: center; margin: 2% 0; }
+  .a4.e2 .numcard { border: 3px solid var(--ink); border-radius: 165px 15px 155px 15px / 15px 155px 15px 165px; padding: 6% 4%; }
+  .a4.e2 .numcard .label { font-size: clamp(11px, 1.2vw, 14px); }
+  .a4.e2 .numcard .big { font-size: clamp(30px, 3.6vw, 44px); font-weight: 700; line-height: 1.1; }
+  .a4.e2 .numcard.g .big { color: var(--green); }
+  .a4.e2 .numcard.p .big { color: #c9457c; }
+  .a4.e2 .vs { font-size: clamp(10px, 1vw, 12px); color: #6b655c; }
+
+  /* 案3: ストーリー型 */
+  .a4.e3 { background: var(--paper-beige); font-family: "Yomogi", sans-serif; }
+  .a4.e3 .theme { color: var(--green); }
+  .a4.e3 .list { list-style: none; display: flex; flex-direction: column; gap: 3%; flex: 1; }
+  .a4.e3 .list li { display: flex; gap: 10px; align-items: baseline; font-size: clamp(12px, 1.3vw, 15px); }
+  .a4.e3 .list .mark { color: var(--orange); font-weight: 700; flex-shrink: 0; }
+  .a4.e3 .list b { background: linear-gradient(transparent 60%, rgba(124,191,107,.35) 60%); }
+
+  /* 麦の粒 簡易SVG風（CSS） */
+  .wheat { display: flex; justify-content: center; gap: 8%; margin: 1% 0; }
+  .grain { text-align: center; font-size: clamp(9px, 1vw, 11px); color: #55503f; }
+  .grain .shape {
+    width: clamp(32px, 3.6vw, 44px); height: clamp(44px, 5vw, 60px);
+    border: 2.5px solid var(--ink); border-radius: 50% 50% 48% 48%;
+    margin: 0 auto 4px; position: relative; background: #fff;
+  }
+  .grain .shape.whole { background: repeating-linear-gradient(-40deg, #e8d9b0 0 5px, #f5eeda 5px 10px); }
+  .grain .shape .germ {
+    position: absolute; bottom: 8%; right: 12%;
+    width: 26%; height: 20%; background: var(--orange); border-radius: 50%;
+  }
+</style>
+<style>
+/* ===== 印刷（mm 固定） ===== */
+@media print {
+  body * { visibility: hidden; }
+  #print-area, #print-area * { visibility: visible; }
+  #print-area { position: absolute; left: 0; top: 0; margin: 0; }
+  /* 棚札: A4 中央に 1 面（180×70mm）→ 上下余白は印刷ダイアログ任せにせず固定 */
+  #print-area .pop.shelf { width: 180mm; height: 70mm; margin: 40mm auto 0; box-shadow: none; transform: none; }
+  /* 説明型: A4 いっぱい */
+  #print-area .pop.a4 { width: 210mm; height: 297mm; margin: 0; box-shadow: none; }
+  .pop .tape { display: none; }
+}
+@page { size: A4 portrait; margin: 0; }
+</style>
