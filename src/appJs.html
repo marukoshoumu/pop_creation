@@ -1,0 +1,73 @@
+<script>
+var state = { popType: 'product', inputText: '', audio: null, fields: null, missing: [], catches: [], selectedIndex: 0, content: null, editingBase: null };
+
+function runServer(fnName) {
+  var args = Array.prototype.slice.call(arguments, 1);
+  return new Promise(function (resolve, reject) {
+    var runner = google.script.run
+      .withSuccessHandler(resolve)
+      .withFailureHandler(function (e) { reject(new Error(e && e.message ? e.message : '通信に失敗しました')); });
+    runner[fnName].apply(runner, args);
+  });
+}
+
+function showScreen(name) {
+  document.querySelectorAll('main > section[data-screen]').forEach(function (s) {
+    s.hidden = s.getAttribute('data-screen') !== name;
+  });
+  window.scrollTo(0, 0);
+}
+
+function showLoading(msg) {
+  document.getElementById('loading-msg').textContent = msg || '処理中…';
+  document.getElementById('loading').hidden = false;
+}
+function hideLoading() { document.getElementById('loading').hidden = true; }
+
+var retryFn_ = null;
+function showError(msg, retryFn) {
+  document.getElementById('error-msg').textContent = msg;
+  document.getElementById('error-retry').hidden = !retryFn;
+  retryFn_ = retryFn || null;
+  document.getElementById('error-bar').hidden = false;
+}
+document.getElementById('error-retry').addEventListener('click', function () {
+  document.getElementById('error-bar').hidden = true;
+  if (retryFn_) retryFn_();
+});
+document.getElementById('error-close').addEventListener('click', function () {
+  document.getElementById('error-bar').hidden = true;
+});
+
+/* ===== 画面1: ホーム ===== */
+function loadHome() {
+  showScreen('home');
+  var grid = document.getElementById('history-grid');
+  runServer('api_listPops').then(function (list) {
+    if (!list.length) { grid.innerHTML = '<p class="muted">まだPOPがありません。「新しいPOPをつくる」から始めましょう。</p>'; return; }
+    grid.innerHTML = list.map(function (p, i) {
+      var img = p.サムネ
+        ? '<img src="' + p.サムネ + '" alt="" style="width:100%;border-radius:4px">'
+        : '<div class="muted" style="padding:20px;text-align:center">' + escapeHtml(p.商品名) + '</div>';
+      return '<div class="history-card">' + img +
+        '<div class="meta"><b>' + escapeHtml(p.商品名) + '</b><br>' + escapeHtml(p.種別) + '・' + escapeHtml(p.サイズ) + ' ／ ' + escapeHtml(p.作成日時) + '</div>' +
+        '<button class="btn mini" data-reprint="' + i + '">🖨 再印刷</button> ' +
+        '<button class="btn mini ghost" data-edit="' + i + '">編集</button></div>';
+    }).join('');
+    grid.querySelectorAll('[data-reprint]').forEach(function (b) {
+      b.addEventListener('click', function () { reprintPop(list[Number(b.getAttribute('data-reprint'))]); });
+    });
+    grid.querySelectorAll('[data-edit]').forEach(function (b) {
+      b.addEventListener('click', function () { editPop(list[Number(b.getAttribute('data-edit'))]); });
+    });
+  }).catch(function (e) { grid.innerHTML = '<p class="muted">履歴を読み込めませんでした: ' + escapeHtml(e.message) + '</p>'; });
+}
+
+/* reprintPop / editPop は Task 13 で実装。それまでは仮置き */
+function reprintPop(p) { console.log('reprint', p.ID); }
+function editPop(p) { console.log('edit', p.ID); }
+
+document.getElementById('btn-new').addEventListener('click', function () { showScreen('input'); });
+
+loadHome();
+</script>

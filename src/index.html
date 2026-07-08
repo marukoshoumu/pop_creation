@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<base target="_top">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Yusei+Magic&family=Zen+Kurenaido&family=Yomogi&family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
+<?!= include('appCss'); ?>
+<?!= include('popStyles'); ?>
+</head>
+<body>
+<header class="app-top">
+  <span class="brand">🌱 ふれあい広場 POPメーカー</span>
+</header>
+
+<div id="loading" class="loading" hidden><div class="spinner"></div><p id="loading-msg"></p></div>
+<div id="error-bar" class="error-bar" hidden>
+  <span id="error-msg"></span>
+  <button id="error-retry" class="btn mini">もう一度</button>
+  <button id="error-close" class="btn mini ghost">閉じる</button>
+</div>
+
+<main>
+  <section data-screen="home">
+    <div class="center"><button class="btn big" id="btn-new">＋ 新しいPOPをつくる</button></div>
+    <h2 class="sec">これまでのPOP</h2>
+    <div id="history-grid" class="history-grid"><p class="muted">読み込み中…</p></div>
+  </section>
+  <section data-screen="input" hidden><!-- Task 9 --></section>
+  <section data-screen="confirm" hidden><!-- Task 10 --></section>
+  <section data-screen="variants" hidden><!-- Task 11 --></section>
+  <section data-screen="print" hidden><!-- Task 12 --></section>
+</main>
+
+<div id="print-area"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+<?!= include('popTemplatesJs'); ?>
+<?!= include('appJs'); ?>
+</body>
+</html>

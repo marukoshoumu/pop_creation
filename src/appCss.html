@@ -1,0 +1,87 @@
+<style>
+/* ===== ページ全体（モック共通リセット） ===== */
+* { box-sizing: border-box; }
+body {
+  margin: 0; padding: 0;
+  font-family: "Noto Sans JP", "Hiragino Sans", sans-serif;
+  background: #efece6;
+  color: var(--ink);
+  line-height: 1.6;
+}
+
+/* ===== システム画面共通（モックからコピー） ===== */
+.app-top {
+  background: var(--orange); color: #fff; padding: 10px 20px;
+  display: flex; justify-content: space-between; align-items: center;
+}
+.app-top .brand { font-weight: 700; }
+.app-top .user { font-size: .72rem; opacity: .9; }
+
+.steps { display: flex; gap: 8px; font-size: .72rem; margin-bottom: 18px; flex-wrap: wrap; }
+.stepchip { padding: 3px 12px; border-radius: 999px; background: #efece6; color: #8a8375; }
+.stepchip.on { background: var(--ink); color: #fff; font-weight: 700; }
+
+.btn {
+  display: inline-block; background: var(--orange); color: #fff; font-weight: 700;
+  border: none; border-radius: 10px; padding: 12px 26px; font-size: .95rem;
+  box-shadow: 0 2px 6px rgba(232,115,12,.3); cursor: pointer;
+}
+.btn.big { font-size: 1.05rem; padding: 16px 34px; }
+.btn.ghost { background: #fff; color: var(--orange); border: 2px solid var(--orange); box-shadow: none; }
+.btn.mini { font-size: .72rem; padding: 5px 14px; border-radius: 7px; }
+
+.field { margin-bottom: 14px; }
+.field label { display: block; font-size: .78rem; font-weight: 700; color: #6b655c; margin-bottom: 4px; }
+.field .input {
+  border: 1.5px solid #d8d2c4; border-radius: 8px; padding: 10px 14px; background: #fff;
+  font-size: .95rem;
+}
+.field.warn .input { border-color: var(--red); border-width: 2px; }
+.field .hint { font-size: .72rem; color: var(--red); margin-top: 3px; }
+.input.area { min-height: 84px; font-size: .85rem; color: #55503f; line-height: 1.55; }
+
+.choice-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 18px; }
+.choice {
+  border: 2px solid #d8d2c4; border-radius: 12px; padding: 14px; text-align: center;
+  background: #fff; font-size: .88rem;
+}
+.choice .ic { font-size: 1.5rem; display: block; margin-bottom: 4px; }
+.choice.on { border-color: var(--orange); background: #fdf3e7; font-weight: 700; }
+.choice .sub2 { display: block; font-size: .7rem; color: #8a8375; font-weight: 400; margin-top: 3px; }
+.dropzone {
+  border: 2px dashed #c9c2b2; border-radius: 12px; padding: 22px; text-align: center;
+  color: #8a8375; font-size: .85rem; background: #faf8f3;
+}
+.ai-note {
+  background: #fdf3e7; border-left: 4px solid var(--orange); border-radius: 0 8px 8px 0;
+  padding: 10px 16px; font-size: .82rem; margin-bottom: 18px;
+}
+
+.history-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-top: 18px; }
+.history-card { background: #faf8f3; border: 1px solid #e4ddcd; border-radius: 10px; padding: 10px; }
+.history-card .meta { font-size: .72rem; color: #6b655c; margin: 8px 0 6px; line-height: 1.4; }
+.history-card .meta b { color: var(--ink); font-size: .8rem; }
+
+.pick-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+.pick { border: 2px solid #d8d2c4; border-radius: 12px; padding: 10px; background: #fff; text-align: center; }
+.pick.on { border-color: var(--orange); background: #fdf3e7; box-shadow: 0 0 0 3px rgba(232,115,12,.15); }
+.pick .radio { font-size: .78rem; margin-top: 8px; color: #6b655c; }
+.pick.on .radio { color: var(--orange); font-weight: 700; }
+.print-note { font-size: .8rem; color: #6b655c; background: #faf8f3; border-radius: 8px; padding: 12px 14px; margin-top: 14px; }
+
+@media (max-width: 640px) {
+  .history-grid, .pick-row { grid-template-columns: 1fr; }
+}
+</style>
+<style>
+main { max-width: 880px; margin: 0 auto; padding: 20px 16px 60px; }
+.center { text-align: center; margin: 18px 0; }
+h2.sec { font-size: 1rem; font-weight: 700; margin: 26px 0 4px; }
+.muted { color: #8a8375; font-size: .85rem; }
+.loading { position: fixed; inset: 0; background: rgba(255,255,255,.8); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 50; }
+.spinner { width: 42px; height: 42px; border: 4px solid #eee; border-top-color: var(--orange); border-radius: 50%; animation: spin 1s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+.error-bar { position: fixed; top: 0; left: 0; right: 0; background: #d33a2c; color: #fff; padding: 10px 16px; display: flex; gap: 10px; align-items: center; z-index: 60; }
+#print-area { position: absolute; left: -9999px; top: 0; }
+@media print { main, header, .loading, .error-bar { display: none !important; } }
+</style>
