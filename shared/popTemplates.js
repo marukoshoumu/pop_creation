@@ -22,6 +22,40 @@ function themeClass_(content) {
   return 'theme-' + t;
 }
 
+function decoName_(content) {
+  var d = content.decoTheme;
+  if (d !== 'lively' && d !== 'season' && d !== 'wamodern') d = 'plain';  // 既定=素朴
+  return d;
+}
+
+/** 桜/角飾りの SVG（説明型 装飾用） */
+function cornerSvg_(pos, kind) {
+  if (kind === 'sakura') {
+    return '<svg class="deco corner ' + pos + '" viewBox="0 0 50 50" fill="#e589a8">' +
+      '<path d="M25 10 q4 6 0 12 q-4-6 0-12"/><path d="M39 20 q-6 4-12 0 q6-4 12 0"/>' +
+      '<path d="M34 37 q-6-4-4-11 q5 4 4 11"/><path d="M16 37 q1-7 4-11 q2 7-4 11"/>' +
+      '<path d="M11 20 q6-4 12 0 q-6 4-12 0"/><circle cx="25" cy="25" r="3" fill="#e8730c"/></svg>';
+  }
+  return '<svg class="deco corner ' + pos + '" viewBox="0 0 40 40" fill="none" stroke="#b98a3a" stroke-width="2.5" stroke-linecap="round">' +
+    '<path d="M4 20 Q4 4 20 4"/><path d="M10 22 Q10 10 22 10"/><circle cx="6" cy="6" r="2" fill="#e8730c" stroke="none"/></svg>';
+}
+
+/** 装飾テーマに応じたオーバーレイ HTML（コンテンツの外側・.pop 直下に置く） */
+function decoHtml_(deco) {
+  if (deco === 'lively') {
+    return '<div class="deco tape l"></div><div class="deco tape r"></div><div class="stamp">おすすめ</div>';
+  }
+  if (deco === 'season') {
+    return cornerSvg_('tl', 'sakura') + cornerSvg_('br', 'sakura') + '<div class="stamp" style="background:#c9457c">旬</div>';
+  }
+  if (deco === 'wamodern') {
+    return '<div class="inner-frame"></div>';
+  }
+  // plain（素朴）: 点線枠 + 四隅の飾り
+  return '<div class="inner-frame"></div>' +
+    cornerSvg_('tl') + cornerSvg_('tr') + cornerSvg_('bl') + cornerSvg_('br');
+}
+
 /* ===== 商品型（棚札） ===== */
 function shelfPriceHtml_(価格) {
   if (価格 === null || 価格 === undefined || 価格 === '') return '<div class="price"></div>';
@@ -113,32 +147,39 @@ function listHtml_(bullets) {
 function renderExplain_(c) {
   var f = c.fields;
   var v = (c.variant === 'e2' || c.variant === 'e3') ? c.variant : 'e1';
-  var parts = ['<div class="pop a4 ' + escapeHtml(c.variant) + ' ' + themeClass_(c) + '">'];
+  var deco = decoName_(c);
+  var body = [];
 
   if (v === 'e2') {
     // 数字インパクト型
-    parts.push('<div class="theme">' + escapeHtml(c.catch) + '</div>');
-    parts.push(numberCardsHtml_(f.比較データ) || pointBoxesHtml_(f.箇条書き));
-    if (f.説明文) parts.push('<div class="body-text">' + escapeHtml(f.説明文) + '</div>');
-    parts.push('<div class="foot">' + escapeHtml(f.主題) + '、いかがですか？</div>');
+    body.push('<div class="theme">' + escapeHtml(c.catch) + '</div>');
+    body.push(numberCardsHtml_(f.比較データ) || pointBoxesHtml_(f.箇条書き));
+    if (f.説明文) body.push('<div class="body-text">' + escapeHtml(f.説明文) + '</div>');
+    body.push('<div class="foot">' + escapeHtml(f.主題) + '、いかがですか？</div>');
   } else if (v === 'e3') {
     // やさしい解説型
-    if (f.フック) parts.push('<div class="hook">' + escapeHtml(f.フック) + '</div>');
-    parts.push('<div class="theme">' + escapeHtml(f.主題) + '</div>');
-    parts.push(listHtml_(f.箇条書き) ||
+    if (f.フック) body.push('<div class="hook">' + escapeHtml(f.フック) + '</div>');
+    body.push('<div class="theme">' + escapeHtml(f.主題) + '</div>');
+    body.push(listHtml_(f.箇条書き) ||
       (f.説明文 ? '<div class="body-text">' + escapeHtml(f.説明文) + '</div>' : ''));
-    parts.push('<div class="foot">' + escapeHtml(c.catch) + '</div>');
+    body.push('<div class="foot">' + escapeHtml(c.catch) + '</div>');
   } else {
     // e1 問いかけ型
-    parts.push('<div class="q1">' + escapeHtml(f.主題) + '</div>');
-    parts.push('<div class="q2">' + emphasizeQ_(c.catch) + '</div>');
-    var mid = chartsHtml_(f.比較データ) || listHtml_(f.箇条書き) ||
-      (f.説明文 ? '<div class="body-text">' + escapeHtml(f.説明文) + '</div>' : '');
-    parts.push(mid);
-    parts.push('<div class="foot">' + escapeHtml(f.フック || f.説明文 || '') + '</div>');
+    body.push('<div class="q1">' + escapeHtml(f.主題) + '</div>');
+    body.push('<div class="q2">' + emphasizeQ_(c.catch) + '</div>');
+    body.push(chartsHtml_(f.比較データ) || listHtml_(f.箇条書き) ||
+      (f.説明文 ? '<div class="body-text">' + escapeHtml(f.説明文) + '</div>' : ''));
+    body.push('<div class="foot">' + escapeHtml(f.フック || f.説明文 || '') + '</div>');
   }
-  parts.push('</div>');
-  return parts.filter(Boolean).join('\n');
+
+  return [
+    '<div class="pop a4 ' + escapeHtml(c.variant) + ' ' + themeClass_(c) + ' deco-' + deco + '">',
+    decoHtml_(deco),
+    '<div class="a4-body">',
+    body.filter(Boolean).join('\n'),
+    '</div>',
+    '</div>',
+  ].join('\n');
 }
 
 function renderPop(content) {

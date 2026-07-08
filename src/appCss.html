@@ -50,12 +50,12 @@ textarea.input, .input.area { min-height: 96px; line-height: 1.7; resize: vertic
 .fonttheme { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; flex-wrap: wrap; }
 .fonttheme .ft-label { font-size: .82rem; font-weight: 700; color: #6b655c; }
 .ft-btns { display: flex; gap: 8px; flex-wrap: wrap; }
-.ft-btn {
+.ft-btn, .dc-btn {
   font-family: inherit; font-size: .85rem; font-weight: 700; padding: 8px 16px;
   border: 2px solid #ddd6c6; background: #fff; color: #8a8375; border-radius: 999px; cursor: pointer;
   transition: all .15s;
 }
-.ft-btn.on { border-color: var(--orange); background: #fdf3e7; color: var(--orange); }
+.ft-btn.on, .dc-btn.on { border-color: var(--orange); background: #fdf3e7; color: var(--orange); }
 
 .choice-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 18px; }
 .choice {

@@ -60,13 +60,48 @@
   .shelf.v3 .zip { background: var(--green); } .shelf.v3 .catch .o { color: var(--green); } .shelf.v3 .price { color: var(--green); }
 
   /* ===== 説明型（A4 210×297mm） ===== */
-  .a4 {
-    aspect-ratio: 210 / 297; width: 100%; padding: 6% 6.5%;
+  .a4 { aspect-ratio: 210 / 297; width: 100%; position: relative; }
+  .a4 .a4-body {
+    position: relative; z-index: 1; height: 100%; padding: 6% 6.5%;
     display: flex; flex-direction: column; justify-content: space-between;
   }
+  /* 基本背景（装飾テーマ未指定/素朴のとき） */
   .a4.e1 { background: linear-gradient(170deg,#fbf6e6,#f1e7cd); }
   .a4.e2 { background: var(--paper-white); }
   .a4.e3 { background: linear-gradient(170deg,#f2ecda,#e9e0c6); }
+
+  /* ===== 装飾テーマ（説明型に適用・オーバーレイ層） ===== */
+  .a4.deco-lively { background:
+      repeating-linear-gradient(60deg, rgba(74,124,63,.06) 0 1px, transparent 1px 26px),
+      repeating-linear-gradient(-60deg, rgba(74,124,63,.06) 0 1px, transparent 1px 26px),
+      repeating-linear-gradient(0deg, rgba(74,124,63,.06) 0 1px, transparent 1px 15px),
+      linear-gradient(170deg,#f3f6ee,#e7efdd); }
+  .a4.deco-season { background:
+      radial-gradient(circle, rgba(229,137,168,.12) 2px, transparent 2.5px) 0 0/22px 22px,
+      linear-gradient(170deg,#fdf3f5,#f8e8ec); }
+  .a4.deco-wamodern { background:
+      radial-gradient(circle at 50% 100%, transparent 30%, rgba(70,110,150,.08) 30% 33%, transparent 33%) 0 0/40px 20px,
+      radial-gradient(circle at 0% 100%, transparent 30%, rgba(70,110,150,.08) 30% 33%, transparent 33%) 20px 0/40px 20px,
+      linear-gradient(170deg,#f2f5f8,#e6edf3); }
+  .a4.deco-plain { background:
+      radial-gradient(circle, rgba(150,110,50,.09) 1.5px, transparent 1.6px) 0 0/16px 16px,
+      linear-gradient(170deg,#fbf6e6,#f1e7cd); }
+
+  /* 装飾パーツ */
+  .a4 .deco { position: absolute; z-index: 0; pointer-events: none; }
+  .a4 .inner-frame { position: absolute; inset: 3.5cqw; z-index: 0; pointer-events: none; }
+  .a4.deco-plain .inner-frame { border: 2px dashed #c9a24a; }
+  .a4.deco-wamodern .inner-frame { border: 4px double #7a9bbf; }
+  .a4 .corner { width: 15cqw; height: 15cqw; opacity: .55; }
+  .a4 .corner.tl { top: 3cqw; left: 3cqw; }
+  .a4 .corner.tr { top: 3cqw; right: 3cqw; transform: scaleX(-1); }
+  .a4 .corner.bl { bottom: 3cqw; left: 3cqw; transform: scaleY(-1); }
+  .a4 .corner.br { bottom: 3cqw; right: 3cqw; transform: scale(-1); }
+  .a4 .stamp { position: absolute; top: 3.5cqw; right: 3.5cqw; width: 19cqw; height: 19cqw; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center; text-align: center; font-family: "Yuji Syuku", serif; font-weight: 700;
+    color: #fff; font-size: 4.6cqw; line-height: 1.1; transform: rotate(-12deg); z-index: 3; box-shadow: 0 2px 5px rgba(0,0,0,.15); background: var(--orange); border: 2px solid rgba(255,255,255,.6); }
+  .a4 .tape { position: absolute; top: -1cqw; width: 22cqw; height: 6.5cqw; background: rgba(230,200,120,.55); box-shadow: 0 1px 3px rgba(0,0,0,.1); z-index: 3; }
+  .a4 .tape.l { left: 7cqw; transform: rotate(-4deg); } .a4 .tape.r { right: 7cqw; transform: rotate(3deg); }
 
   /* 共通見出し */
   .a4 .q1 { text-align: center; font-size: 6cqw; font-weight: 700; color: #3a3226; }

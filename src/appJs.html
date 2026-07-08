@@ -1,5 +1,5 @@
 <script>
-var state = { popType: 'product', fontTheme: 'fude', inputText: '', audio: null, fields: null, missing: [], catches: [], selectedIndex: 0, content: null, fromReprint: false };
+var state = { popType: 'product', fontTheme: 'fude', decoTheme: 'plain', inputText: '', audio: null, fields: null, missing: [], catches: [], selectedIndex: 0, content: null, fromReprint: false };
 
 function runServer(fnName) {
   var args = Array.prototype.slice.call(arguments, 1);
@@ -94,6 +94,7 @@ function editPop(p) {
   if (!content) return;
   state.popType = content.type;
   state.fontTheme = content.fontTheme || 'fude';
+  state.decoTheme = content.decoTheme || 'plain';
   state.fields = content.fields;
   state.missing = [];
   state.fromReprint = false;  // 編集は通常フローに合流する
@@ -104,7 +105,7 @@ function editPop(p) {
 }
 
 document.getElementById('btn-new').addEventListener('click', function () {
-  state = { popType: 'product', fontTheme: 'fude', inputText: '', audio: null, fields: null, missing: [], catches: [], selectedIndex: 0, content: null, fromReprint: false };
+  state = { popType: 'product', fontTheme: 'fude', decoTheme: 'plain', inputText: '', audio: null, fields: null, missing: [], catches: [], selectedIndex: 0, content: null, fromReprint: false };
   saved_ = false;
   document.getElementById('input-text').value = '';
   document.getElementById('audio-name').textContent = '';
@@ -281,7 +282,7 @@ function contentFor_(i) {
   return {
     type: state.popType,
     variant: variants[i % variants.length],
-    fontTheme: state.fontTheme,
+    fontTheme: state.fontTheme, decoTheme: state.decoTheme,
     catch: c.キャッチ, catchAngle: c.切り口,
     fields: state.fields,
   };
@@ -311,29 +312,38 @@ function renderVariants() {
       document.getElementById('catch-edit').value = state.catches[state.selectedIndex].キャッチ;
     });
   });
-  syncFontButtons_();
+  syncThemeButtons_();
 }
 
-/* フォントテーマ切替（3案プレビューを再描画） */
-function syncFontButtons_() {
+/* テーマボタンの選択状態＋装飾行の表示（装飾は説明型のみ） */
+function syncThemeButtons_() {
   document.querySelectorAll('.ft-btn').forEach(function (b) {
     b.classList.toggle('on', b.getAttribute('data-font') === state.fontTheme);
   });
-}
-document.querySelectorAll('.ft-btn').forEach(function (b) {
-  b.addEventListener('click', function () {
-    state.fontTheme = b.getAttribute('data-font');
-    var sel = state.selectedIndex;
-    renderVariants();
-    // 選択中の案・キャッチ編集を維持
-    state.selectedIndex = sel;
-    var picks = document.getElementById('variant-picks');
-    picks.querySelectorAll('.pick').forEach(function (p, j) {
-      p.classList.toggle('on', j === sel);
-      p.querySelector('.radio').textContent = (j === sel ? '● ' : '○ ') + '案' + (j + 1) + ' ' + state.catches[j].切り口;
-    });
-    document.getElementById('catch-edit').value = state.catches[sel].キャッチ;
+  document.querySelectorAll('.dc-btn').forEach(function (b) {
+    b.classList.toggle('on', b.getAttribute('data-deco') === state.decoTheme);
   });
+  document.getElementById('deco-row').hidden = (state.popType !== 'explain');
+}
+
+/* テーマ変更後に3案を再描画し、選択中の案・キャッチ編集を維持 */
+function rerenderKeepSelection_() {
+  var sel = state.selectedIndex;
+  renderVariants();
+  state.selectedIndex = sel;
+  var picks = document.getElementById('variant-picks');
+  picks.querySelectorAll('.pick').forEach(function (p, j) {
+    p.classList.toggle('on', j === sel);
+    p.querySelector('.radio').textContent = (j === sel ? '● ' : '○ ') + '案' + (j + 1) + ' ' + state.catches[j].切り口;
+  });
+  document.getElementById('catch-edit').value = state.catches[sel].キャッチ;
+}
+
+document.querySelectorAll('.ft-btn').forEach(function (b) {
+  b.addEventListener('click', function () { state.fontTheme = b.getAttribute('data-font'); rerenderKeepSelection_(); });
+});
+document.querySelectorAll('.dc-btn').forEach(function (b) {
+  b.addEventListener('click', function () { state.decoTheme = b.getAttribute('data-deco'); rerenderKeepSelection_(); });
 });
 
 document.getElementById('btn-select').addEventListener('click', function () {
