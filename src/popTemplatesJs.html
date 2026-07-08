@@ -61,21 +61,75 @@ function chartHtml_(list) {
   return '<div class="charts">' + items.join('\n') + '</div>';
 }
 
-function renderExplain_(c) {
-  var f = c.fields;
-  var 箇条 = (f.箇条書き || []).map(function (s) {
+function explainListHtml_(bullets) {
+  var li = (bullets || []).map(function (s) {
     return '<li><span class="mark">✔</span><span>' + escapeHtml(s) + '</span></li>';
   }).join('\n');
-  return [
-    '<div class="pop a4 ' + escapeHtml(c.variant) + '">',
-    f.フック ? '  <div class="hook">' + escapeHtml(f.フック) + '</div>' : '',
-    '  <div class="theme">' + escapeHtml(f.主題) + '</div>',
-    '  <div class="q">' + escapeHtml(c.catch) + '</div>',
-    chartHtml_(f.比較データ),
-    f.説明文 ? '  <div class="body-text">' + escapeHtml(f.説明文) + '</div>' : '',
-    箇条 ? '  <ul class="list">' + 箇条 + '</ul>' : '',
-    '</div>',
-  ].join('\n');
+  return li ? '<ul class="list">' + li + '</ul>' : '';
+}
+
+function numberCardsHtml_(list) {
+  var cls = ['g', 'p'];
+  var items = (list || []).filter(function (d) {
+    return isFinite(d.対象値) && isFinite(d.比較値) && d.比較値 > 0;
+  }).slice(0, 2);
+  if (items.length === 0) return '';
+  var cards = items.map(function (d, i) {
+    var ratio = d.対象値 / d.比較値;
+    return '<div class="numcard ' + cls[i % 2] + '">' +
+      '<div class="label">' + escapeHtml(d.ラベル) + '</div>' +
+      '<div class="big">' + escapeHtml(ratio) + escapeHtml(d.単位 || '倍') + '！</div>' +
+      (d.補足 ? '<div class="vs">' + escapeHtml(d.補足) + '</div>' : '') +
+      '</div>';
+  }).join('');
+  return '<div class="numbers">' + cards + '</div>';
+}
+
+function pointCardsHtml_(bullets) {
+  var items = (bullets || []).slice(0, 4);
+  if (items.length === 0) return '';
+  var rows = items.map(function (s) {
+    return '<div class="pointbox">' + escapeHtml(s) + '</div>';
+  }).join('');
+  return '<div class="pointlist">' + rows + '</div>';
+}
+
+/**
+ * 説明型は変種ごとに別レイアウト（モック準拠）。
+ * e1 問いかけ型 / e2 数字インパクト型 / e3 やさしい解説型。
+ * 比較データが無い場合も箇条書きで見栄えするようフォールバックする。
+ */
+function renderExplain_(c) {
+  var f = c.fields;
+  var v = (c.variant === 'e2' || c.variant === 'e3') ? c.variant : 'e1';
+  var parts = ['<div class="pop a4 ' + escapeHtml(c.variant) + '">', '<div class="tape"></div>'];
+
+  if (v === 'e2') {
+    // 数字インパクト型: 比較データを数字カードに。無ければ箇条書きを要点カードに。
+    parts.push('<div class="theme">' + escapeHtml(c.catch) + '</div>');
+    parts.push(numberCardsHtml_(f.比較データ) || pointCardsHtml_(f.箇条書き));
+    if (f.説明文) parts.push('<div class="body-text">' + escapeHtml(f.説明文) + '</div>');
+    parts.push('<div class="foot">' + escapeHtml(f.主題) + '、いかがですか？</div>');
+  } else if (v === 'e3') {
+    // やさしい解説型: 箇条書き中心。
+    if (f.フック) parts.push('<div class="hook">' + escapeHtml(f.フック) + '</div>');
+    parts.push('<div class="theme">' + escapeHtml(f.主題) + '</div>');
+    parts.push(explainListHtml_(f.箇条書き) ||
+      (f.説明文 ? '<div class="body-text">' + escapeHtml(f.説明文) + '</div>' : ''));
+    parts.push('<div class="foot">' + escapeHtml(c.catch) + '</div>');
+  } else {
+    // e1 問いかけ型: キャッチを問いかけ見出しに。棒グラフ＋要点リストで紙面を埋める。
+    parts.push('<div class="q">' + escapeHtml(c.catch) + '</div>');
+    parts.push('<div class="theme">' + escapeHtml(f.主題) + '</div>');
+    var e1charts = chartHtml_(f.比較データ);
+    var e1list = explainListHtml_(f.箇条書き);
+    parts.push(e1charts);
+    parts.push(e1list);
+    if (!e1charts && !e1list && f.説明文) parts.push('<div class="body-text">' + escapeHtml(f.説明文) + '</div>');
+    parts.push('<div class="foot">' + escapeHtml(f.説明文 || f.フック || '') + '</div>');
+  }
+  parts.push('</div>');
+  return parts.filter(Boolean).join('\n');
 }
 
 function renderPop(content) {
