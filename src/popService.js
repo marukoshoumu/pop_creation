@@ -20,11 +20,31 @@ function api_savePop(record, base64Png) {
       Logger.log('サムネイル保存失敗: ' + e.message);  // spec: PNG 無しで履歴登録を続行
     }
   }
-  var id = savePop({
-    種別: record.種別, サイズ: record.サイズ, 商品名: record.商品名,
-    内容JSON: record.内容JSON, PNGファイルID: pngId,
-  });
-  if (pngId) DriveApp.getFileById(pngId).setName(id + '.png');
+  var id;
+  try {
+    id = savePop({
+      種別: record.種別, サイズ: record.サイズ, 商品名: record.商品名,
+      内容JSON: record.内容JSON, PNGファイルID: pngId,
+    });
+  } catch (e) {
+    if (pngId) {
+      try {
+        DriveApp.getFileById(pngId).setTrashed(true);  // 履歴登録失敗時、孤児化した tmp.png を掃除
+      } catch (e2) {
+        Logger.log('孤児ファイル削除失敗: ' + e2.message);
+      }
+    }
+    throw e;  // 履歴登録の失敗はクライアントに正しく伝える
+  }
+  if (pngId) {
+    try {
+      DriveApp.getFileById(pngId).setName(id + '.png');
+    } catch (e) {
+      // spec: PNG 保存(リネーム)に失敗しても履歴登録は続行。id は成功として返す
+      Logger.log('PNG リネーム失敗: ' + e.message);
+      thumbnailSaved = false;
+    }
+  }
   return { id: id, thumbnailSaved: thumbnailSaved };
 }
 
