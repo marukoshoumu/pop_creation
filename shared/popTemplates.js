@@ -148,35 +148,39 @@ function renderExplain_(c) {
   var f = c.fields;
   var v = (c.variant === 'e2' || c.variant === 'e3') ? c.variant : 'e1';
   var deco = decoName_(c);
-  var body = [];
+  var header = [];  // 上部（見出し）
+  var mid = [];     // 中央（残り高さいっぱいに広げる）
+  var foot = '';    // 下部（締め）
 
   if (v === 'e2') {
     // 数字インパクト型
-    body.push('<div class="theme">' + escapeHtml(c.catch) + '</div>');
-    body.push(numberCardsHtml_(f.比較データ) || pointBoxesHtml_(f.箇条書き));
-    if (f.説明文) body.push('<div class="body-text">' + escapeHtml(f.説明文) + '</div>');
-    body.push('<div class="foot">' + escapeHtml(f.主題) + '、いかがですか？</div>');
+    header.push('<div class="theme">' + escapeHtml(c.catch) + '</div>');
+    mid.push(numberCardsHtml_(f.比較データ) || pointBoxesHtml_(f.箇条書き));
+    if (f.説明文) mid.push('<div class="body-text">' + escapeHtml(f.説明文) + '</div>');
+    foot = '<div class="foot">' + escapeHtml(f.主題) + '、いかがですか？</div>';
   } else if (v === 'e3') {
     // やさしい解説型
-    if (f.フック) body.push('<div class="hook">' + escapeHtml(f.フック) + '</div>');
-    body.push('<div class="theme">' + escapeHtml(f.主題) + '</div>');
-    body.push(listHtml_(f.箇条書き) ||
+    if (f.フック) header.push('<div class="hook">' + escapeHtml(f.フック) + '</div>');
+    header.push('<div class="theme">' + escapeHtml(f.主題) + '</div>');
+    mid.push(listHtml_(f.箇条書き) ||
       (f.説明文 ? '<div class="body-text">' + escapeHtml(f.説明文) + '</div>' : ''));
-    body.push('<div class="foot">' + escapeHtml(c.catch) + '</div>');
+    foot = '<div class="foot">' + escapeHtml(c.catch) + '</div>';
   } else {
     // e1 問いかけ型
-    body.push('<div class="q1">' + escapeHtml(f.主題) + '</div>');
-    body.push('<div class="q2">' + emphasizeQ_(c.catch) + '</div>');
-    body.push(chartsHtml_(f.比較データ) || listHtml_(f.箇条書き) ||
+    header.push('<div class="q1">' + escapeHtml(f.主題) + '</div>');
+    header.push('<div class="q2">' + emphasizeQ_(c.catch) + '</div>');
+    mid.push(chartsHtml_(f.比較データ) || listHtml_(f.箇条書き) ||
       (f.説明文 ? '<div class="body-text">' + escapeHtml(f.説明文) + '</div>' : ''));
-    body.push('<div class="foot">' + escapeHtml(f.フック || f.説明文 || '') + '</div>');
+    foot = '<div class="foot">' + escapeHtml(f.フック || f.説明文 || '') + '</div>';
   }
 
   return [
     '<div class="pop a4 ' + escapeHtml(c.variant) + ' ' + themeClass_(c) + ' deco-' + deco + '">',
     decoHtml_(deco),
     '<div class="a4-body">',
-    body.filter(Boolean).join('\n'),
+    header.filter(Boolean).join('\n'),
+    '<div class="a4-mid">' + mid.filter(Boolean).join('\n') + '</div>',
+    foot,
     '</div>',
     '</div>',
   ].join('\n');

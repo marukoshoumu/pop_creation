@@ -63,8 +63,10 @@
   .a4 { aspect-ratio: 210 / 297; width: 100%; position: relative; }
   .a4 .a4-body {
     position: relative; z-index: 1; height: 100%; padding: 6% 6.5%;
-    display: flex; flex-direction: column; justify-content: space-between;
+    display: flex; flex-direction: column; gap: 2%;
   }
+  /* 中央コンテンツ（グラフ/カード/リスト）を残り高さいっぱいに広げ余白を消す */
+  .a4 .a4-mid { flex: 1; display: flex; flex-direction: column; justify-content: center; gap: 4%; }
   /* 基本背景（装飾テーマ未指定/素朴のとき） */
   .a4.e1 { background: linear-gradient(170deg,#fbf6e6,#f1e7cd); }
   .a4.e2 { background: var(--paper-white); }
@@ -104,41 +106,41 @@
   .a4 .tape.l { left: 7cqw; transform: rotate(-4deg); } .a4 .tape.r { right: 7cqw; transform: rotate(3deg); }
 
   /* 共通見出し */
-  .a4 .q1 { text-align: center; font-size: 6cqw; font-weight: 700; color: #3a3226; }
+  .a4 .q1 { text-align: center; font-size: 7cqw; font-weight: 700; color: #3a3226; }
   .a4 .q1 .em { font-size: 2.2em; color: var(--green); vertical-align: -.12em; }
-  .a4 .q2 { text-align: center; font-size: 9.5cqw; color: #3a3226; line-height: 1.12; }
+  .a4 .q2 { text-align: center; font-size: 11cqw; color: #3a3226; line-height: 1.1; }
   .a4 .q2 .qm { color: var(--orange); }
-  .a4 .theme { text-align: center; font-size: 10cqw; line-height: 1.15; color: var(--ink); }
+  .a4 .theme { text-align: center; font-size: 11cqw; line-height: 1.12; color: var(--ink); }
   .a4.e2 .theme { color: var(--ink); }
   .a4.e3 .theme { color: var(--green); text-align: left; }
   .a4 .hook { font-size: 4.4cqw; color: #5a5030; }
   .a4 .body-text { font-size: 3.7cqw; line-height: 1.75; color: #3a3226; }
-  .a4 .foot { text-align: center; font-size: 6cqw; color: var(--ink); line-height: 1.5; }
+  .a4 .foot { text-align: center; font-size: 6.4cqw; color: var(--ink); line-height: 1.5; }
   .a4 .foot .mk, .a4 .body-text .mk { background: linear-gradient(transparent 58%,#ffe08a 58%); }
 
   /* 棒グラフ */
   .charts { display: flex; gap: 6%; }
   .chart { flex: 1; text-align: center; }
-  .chart .metric { display: inline-block; background: var(--green); color: #fff; font-weight: 700; font-size: 3.4cqw; padding: 2px 12px; border-radius: 16px; }
+  .chart .metric { display: inline-block; background: var(--green); color: #fff; font-weight: 700; font-size: 4cqw; padding: 2px 12px; border-radius: 16px; }
   .chart.fe .metric { background: var(--pink); }
   .chart .mult { font-size: 13cqw; color: var(--green); line-height: .9; margin: 3% 0 1%; transform: rotate(-4deg); white-space: nowrap; }
   .chart.fe .mult { color: var(--pink); }
-  .chart .bars { display: flex; align-items: flex-end; justify-content: center; gap: 14%; height: 42cqw; border-bottom: 3px solid var(--ink); padding: 0 6%; }
+  .chart .bars { display: flex; align-items: flex-end; justify-content: center; gap: 14%; height: 46cqw; border-bottom: 3px solid var(--ink); padding: 0 6%; }
   .chart .bar { width: 36%; border: 2.5px solid var(--ink); border-bottom: none; }
   .chart .bar.hi { background: repeating-linear-gradient(45deg,var(--bar-green) 0 6px,#a8d99a 6px 12px); }
   .chart.fe .bar.hi { background: repeating-linear-gradient(45deg,var(--bar-pink) 0 6px,#f7c3d5 6px 12px); }
   .chart .bar.lo { background: #fff; }
-  .chart .lg { display: flex; justify-content: center; gap: 14%; padding: 0 6%; font-size: 3.2cqw; margin-top: 4px; }
+  .chart .lg { display: flex; justify-content: center; gap: 14%; padding: 0 6%; font-size: 4cqw; margin-top: 6px; font-weight: 700; }
   .chart .lg span { width: 36%; }
-  .chart .cap { font-size: 3.1cqw; color: #5a5030; margin-top: 5px; }
+  .chart .cap { font-size: 3.4cqw; color: #5a5030; margin-top: 6px; text-wrap: balance; }
 
   /* 数字カード（e2） */
   .numbers { display: grid; grid-template-columns: minmax(0,1fr) minmax(0,1fr); gap: 5%; }
-  .numcard { border: 3px solid var(--ink); border-radius: 165px 15px 155px 15px/15px 155px 15px 165px; padding: 6% 4%; text-align: center; }
-  .numcard .label { font-size: 3.6cqw; font-weight: 700; }
-  .numcard .big { font-size: 13cqw; line-height: 1; margin: 3% 0; white-space: nowrap; }
+  .numcard { border: 3px solid var(--ink); border-radius: 165px 15px 155px 15px/15px 155px 15px 165px; padding: 14% 3%; text-align: center; }
+  .numcard .label { font-size: 4.4cqw; font-weight: 700; }
+  .numcard .big { font-size: 13.5cqw; line-height: 1; margin: 7% 0; white-space: nowrap; }
   .numcard.g .big { color: var(--green); } .numcard.p .big { color: var(--pink); }
-  .numcard .vs { font-size: 3.1cqw; color: #6b655c; }
+  .numcard .vs { font-size: 3.9cqw; color: #6b655c; text-wrap: balance; }
   /* 数字カード無し時の全幅ボックス */
   .pointlist { display: flex; flex-direction: column; gap: 4%; }
   .pointbox { border: 3px solid var(--ink); border-radius: 155px 12px 145px 12px/12px 145px 12px 155px; padding: 4.5% 6%; font-size: 5cqw; font-weight: 700; text-align: center; }
