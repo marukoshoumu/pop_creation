@@ -67,7 +67,13 @@ function loadHome() {
 function reprintPop(p) { console.log('reprint', p.ID); }
 function editPop(p) { console.log('edit', p.ID); }
 
-document.getElementById('btn-new').addEventListener('click', function () { showScreen('input'); });
+document.getElementById('btn-new').addEventListener('click', function () {
+  state = { popType: 'product', inputText: '', audio: null, fields: null, missing: [], catches: [], selectedIndex: 0, content: null, editingBase: null };
+  saved_ = false;
+  document.getElementById('input-text').value = '';
+  document.getElementById('audio-name').textContent = '';
+  showScreen('input');
+});
 
 /* ===== 画面2: 入力 ===== */
 var AUDIO_MAX_BYTES = 15 * 1024 * 1024;
@@ -267,6 +273,65 @@ document.getElementById('variants-back').addEventListener('click', function () {
   renderConfirm();
   showScreen('confirm');
 });
+
+/* ===== 画面5: 印刷・保存 ===== */
+function renderPrint() {
+  document.getElementById('print-preview').innerHTML = renderPop(state.content);
+}
+
+function popRecord_() {
+  var f = state.content.fields;
+  return {
+    種別: state.content.type === 'product' ? '商品型' : '説明型',
+    サイズ: state.content.type === 'product' ? '棚札' : 'A4縦',
+    商品名: state.content.type === 'product' ? f.商品名 : f.主題,
+    内容JSON: JSON.stringify(state.content),
+  };
+}
+
+function capturePng_() {
+  var area = document.getElementById('print-area');
+  area.innerHTML = renderPop(state.content);
+  return html2canvas(area.firstElementChild, { scale: 1.5 })
+    .then(function (canvas) {
+      area.innerHTML = '';
+      return canvas.toDataURL('image/png').split(',')[1];
+    })
+    .catch(function (e) {
+      area.innerHTML = '';
+      console.warn('html2canvas 失敗:', e);
+      return null;  // spec: 印刷・保存は PNG 無しで続行
+    });
+}
+
+var saved_ = false;
+function savePopWithPng_() {
+  if (saved_) return Promise.resolve();
+  var status = document.getElementById('save-status');
+  status.textContent = '履歴に保存しています…';
+  return capturePng_().then(function (png) {
+    return runServer('api_savePop', popRecord_(), png).then(function (r) {
+      saved_ = true;
+      status.textContent = '✓ 履歴に保存しました（' + r.id + '）' +
+        (r.thumbnailSaved ? '' : ' ※サムネイル画像は保存できませんでした（再印刷は可能です）');
+    });
+  }).catch(function (e) {
+    status.innerHTML = '保存に失敗しました: ' + escapeHtml(e.message) +
+      ' <button class="btn mini" id="save-retry">保存を再試行</button>';
+    document.getElementById('save-retry').addEventListener('click', savePopWithPng_);
+  });
+}
+
+document.getElementById('btn-print').addEventListener('click', function () {
+  var area = document.getElementById('print-area');
+  area.innerHTML = renderPop(state.content);
+  area.style.left = '0';
+  window.print();
+  area.style.left = '-9999px';
+  area.innerHTML = '';
+  savePopWithPng_();   // 印刷ダイアログ後に保存（spec: 保存失敗でも印刷は成立）
+});
+document.getElementById('print-back').addEventListener('click', function () { saved_ = false; showScreen('variants'); });
 
 loadHome();
 </script>

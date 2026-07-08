@@ -68,7 +68,15 @@
       <button class="btn big" id="btn-select">この案にする →</button>
     </div>
   </section>
-  <section data-screen="print" hidden><!-- Task 12 --></section>
+  <section data-screen="print" hidden>
+    <div class="steps"><span class="stepchip">1 入力</span><span class="stepchip">2 確認</span><span class="stepchip">3 案をえらぶ</span><span class="stepchip on">4 印刷</span></div>
+    <div id="print-preview"></div>
+    <div class="btn-row">
+      <button class="btn ghost" id="print-back">← 案にもどる</button>
+      <button class="btn big" id="btn-print">🖨 印刷する（A4）</button>
+    </div>
+    <div class="print-note" id="save-status">印刷すると自動で履歴に保存されます。</div>
+  </section>
 </main>
 
 <div id="print-area"></div>
