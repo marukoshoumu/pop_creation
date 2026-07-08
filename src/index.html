@@ -58,7 +58,16 @@
       <button class="btn big" id="btn-catches">この内容で3案つくる →</button>
     </div>
   </section>
-  <section data-screen="variants" hidden><!-- Task 11 --></section>
+  <section data-screen="variants" hidden>
+    <div class="steps"><span class="stepchip">1 入力</span><span class="stepchip">2 確認</span><span class="stepchip on">3 案をえらぶ</span><span class="stepchip">4 印刷</span></div>
+    <div class="pick-row" id="variant-picks"></div>
+    <div class="field" style="margin-top:14px"><label>選んだ案のキャッチを手直しできます</label>
+      <input class="input" id="catch-edit"></div>
+    <div class="btn-row">
+      <button class="btn ghost" id="variants-back">← 内容を直す</button>
+      <button class="btn big" id="btn-select">この案にする →</button>
+    </div>
+  </section>
   <section data-screen="print" hidden><!-- Task 12 --></section>
 </main>
 

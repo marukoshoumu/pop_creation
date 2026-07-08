@@ -215,5 +215,58 @@ function requestCatches() {
 document.getElementById('btn-catches').addEventListener('click', requestCatches);
 document.getElementById('confirm-back').addEventListener('click', function () { showScreen('input'); });
 
+/* ===== 画面4: 3案選択 ===== */
+var PRODUCT_VARIANTS = ['v1', 'v2', 'v3'];
+var EXPLAIN_VARIANTS = ['e1', 'e2', 'e3'];
+
+function contentFor_(i) {
+  var variants = state.popType === 'product' ? PRODUCT_VARIANTS : EXPLAIN_VARIANTS;
+  var c = state.catches[i] || state.catches[0];
+  return {
+    type: state.popType,
+    variant: variants[i % variants.length],
+    catch: c.キャッチ, catchAngle: c.切り口,
+    fields: state.fields,
+  };
+}
+
+function renderVariants() {
+  var picks = document.getElementById('variant-picks');
+  var n = Math.min(3, state.catches.length || 1);
+  var html = '';
+  for (var i = 0; i < n; i++) {
+    var content = contentFor_(i);
+    html += '<div class="pick' + (i === 0 ? ' on' : '') + '" data-pick="' + i + '">' +
+      '<div class="pick-preview">' + renderPop(content) + '</div>' +
+      '<div class="radio">' + (i === 0 ? '●' : '○') + ' 案' + (i + 1) + ' ' + escapeHtml(content.catchAngle) + '</div></div>';
+  }
+  picks.innerHTML = html;
+  state.selectedIndex = 0;
+  document.getElementById('catch-edit').value = state.catches[0].キャッチ;
+  picks.querySelectorAll('[data-pick]').forEach(function (el) {
+    el.addEventListener('click', function () {
+      state.selectedIndex = Number(el.getAttribute('data-pick'));
+      picks.querySelectorAll('.pick').forEach(function (p, j) {
+        p.classList.toggle('on', j === state.selectedIndex);
+        p.querySelector('.radio').textContent = (j === state.selectedIndex ? '● ' : '○ ') +
+          '案' + (j + 1) + ' ' + state.catches[j].切り口;
+      });
+      document.getElementById('catch-edit').value = state.catches[state.selectedIndex].キャッチ;
+    });
+  });
+}
+
+document.getElementById('btn-select').addEventListener('click', function () {
+  var edited = document.getElementById('catch-edit').value.trim();
+  if (edited) state.catches[state.selectedIndex].キャッチ = edited;
+  state.content = contentFor_(state.selectedIndex);
+  renderPrint();               // Task 12
+  showScreen('print');
+});
+document.getElementById('variants-back').addEventListener('click', function () {
+  renderConfirm();
+  showScreen('confirm');
+});
+
 loadHome();
 </script>
