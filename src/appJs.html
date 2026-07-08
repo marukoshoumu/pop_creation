@@ -63,9 +63,33 @@ function loadHome() {
   }).catch(function (e) { grid.innerHTML = '<p class="muted">履歴を読み込めませんでした: ' + escapeHtml(e.message) + '</p>'; });
 }
 
-/* reprintPop / editPop は Task 13 で実装。それまでは仮置き */
-function reprintPop(p) { console.log('reprint', p.ID); }
-function editPop(p) { console.log('edit', p.ID); }
+/* ===== 履歴: 再印刷・編集 ===== */
+function restoreContent_(p) {
+  try { return JSON.parse(p.内容JSON); }
+  catch (e) { showError('このPOPのデータを読み込めませんでした。'); return null; }
+}
+
+function reprintPop(p) {
+  var content = restoreContent_(p);
+  if (!content) return;
+  state.content = content;
+  state.popType = content.type;
+  saved_ = true;              // 再印刷では履歴を二重登録しない
+  renderPrint();
+  document.getElementById('save-status').textContent = '再印刷モード（履歴には保存済みです）';
+  showScreen('print');
+}
+
+function editPop(p) {
+  var content = restoreContent_(p);
+  if (!content) return;
+  state.popType = content.type;
+  state.fields = content.fields;
+  state.missing = [];
+  saved_ = false;             // 編集後の印刷は新規行として保存
+  renderConfirm();
+  showScreen('confirm');
+}
 
 document.getElementById('btn-new').addEventListener('click', function () {
   state = { popType: 'product', inputText: '', audio: null, fields: null, missing: [], catches: [], selectedIndex: 0, content: null, editingBase: null };
