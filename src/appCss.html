@@ -109,6 +109,8 @@ body {
 }
 </style>
 <style>
+/* hidden 属性を最優先。.loading/.error-bar/.btn 等の display 指定より hidden を勝たせる */
+[hidden] { display: none !important; }
 main { max-width: 880px; margin: 0 auto; padding: 20px 16px 60px; }
 .center { text-align: center; margin: 18px 0; }
 h2.sec { font-size: 1rem; font-weight: 700; margin: 26px 0 4px; }
