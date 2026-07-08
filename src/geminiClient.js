@@ -6,6 +6,7 @@ function geminiEndpoint_() {
     ':generateContent?key=' + c.apiKey;
 }
 
+/** 呼び出し + 応答の形状検証 + JSON パースまでを担う。パース済みオブジェクトを返す */
 function callGemini_(payload) {
   var options = {
     method: 'post',
@@ -20,20 +21,30 @@ function callGemini_(payload) {
       var code = res.getResponseCode();
       var body = res.getContentText();
       if (code === 429) {
-        throw new Error('AIの利用枠が一時的に上限です。時間をおいて再試行するか、テキスト入力をご利用ください。');
+        var quotaErr = new Error('AIの利用枠が一時的に上限です。時間をおいて再試行するか、テキスト入力をご利用ください。');
+        quotaErr.noRetry = true;  // 429 はリトライしない
+        throw quotaErr;
       }
       if (code !== 200) {
         Logger.log('Gemini error ' + code + ': ' + body);
         throw new Error('AI処理に失敗しました（コード ' + code + '）。もう一度お試しください。');
       }
       var json = JSON.parse(body);
-      if (!json.candidates || !json.candidates.length) {
-        throw new Error('AIからの応答が空でした。もう一度お試しください。');
+      var candidate = json.candidates && json.candidates[0];
+      var text = candidate && candidate.content && candidate.content.parts && candidate.content.parts[0] &&
+        candidate.content.parts[0].text;
+      if (!text) {
+        throw new Error('AIからの応答を読み取れませんでした。もう一度お試しください。');
       }
-      return json.candidates[0].content.parts[0].text;
+      try {
+        return parseGeminiJson(text);
+      } catch (parseErr) {
+        Logger.log('Gemini JSON parse error: ' + parseErr + ' / text=' + text);
+        throw new Error('AIの応答を解釈できませんでした。もう一度お試しください。');
+      }
     } catch (e) {
       lastErr = e;
-      if (String(e.message).indexOf('利用枠') >= 0) throw e;  // 429 はリトライしない
+      if (e.noRetry) throw e;
     }
   }
   throw lastErr;
@@ -49,17 +60,15 @@ function extractContent(input, popType) {
   } else {
     reqOpts.prompt = prompt + '\n\nインタビュー内容:\n' + input.text;
   }
-  var text = callGemini_(buildGeminiRequest(reqOpts));
-  var obj = parseGeminiJson(text);
+  var obj = callGemini_(buildGeminiRequest(reqOpts));
   return popType === 'product' ? validateProductFields(obj) : validateExplainFields(obj);
 }
 
 function generateCatches(fields, popType) {
-  var text = callGemini_(buildGeminiRequest({
+  var obj = callGemini_(buildGeminiRequest({
     prompt: buildCatchesPrompt(fields, popType),
     schema: CATCHES_SCHEMA,
   }));
-  var obj = parseGeminiJson(text);
   var list = (obj['案'] || []).filter(function (a) { return a && a['キャッチ']; }).slice(0, 3);
   if (list.length === 0) throw new Error('キャッチ案を作れませんでした。もう一度お試しください。');
   return list;
