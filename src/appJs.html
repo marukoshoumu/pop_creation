@@ -126,5 +126,93 @@ function processInput() {
 }
 document.getElementById('btn-process').addEventListener('click', processInput);
 
+/* ===== 画面3: 確認・編集 ===== */
+function fieldRow_(key, label, value, opts) {
+  opts = opts || {};
+  var warn = opts.warn ? ' warn' : '';
+  var input = opts.textarea
+    ? '<textarea class="input area" data-field="' + key + '">' + escapeHtml(value) + '</textarea>'
+    : '<input class="input" data-field="' + key + '" value="' + escapeHtml(value) + '">';
+  return '<div class="field' + warn + '"><label>' + label + '</label>' + input +
+    (opts.hint ? '<div class="hint">' + opts.hint + '</div>' : '') + '</div>';
+}
+
+function renderConfirm() {
+  var f = state.fields;
+  var html;
+  if (state.popType === 'product') {
+    html = fieldRow_('商品名', '商品名', f.商品名) +
+      fieldRow_('補足', '補足（よみ・別名）', f.補足) +
+      fieldRow_('価格', '価格（税込・数字のみ）', f.価格 === null ? '' : f.価格,
+        { warn: true, hint: '※ ここで入力した数字が“そのまま”印刷されます。かならず確認してください。' }) +
+      fieldRow_('容量', '容量（例: 10g、3本）', f.容量) +
+      fieldRow_('生産者', '生産者・売り場名', f.生産者) +
+      fieldRow_('アピールポイント', 'アピールポイント（1行1つ）', f.アピールポイント.join('\n'), { textarea: true });
+  } else {
+    html = fieldRow_('フック', 'フック（興味を引く一言）', f.フック) +
+      fieldRow_('主題', '主題', f.主題) +
+      fieldRow_('説明文', '説明文', f.説明文, { textarea: true }) +
+      fieldRow_('箇条書き', '箇条書き（1行1つ）', f.箇条書き.join('\n'), { textarea: true }) +
+      fieldRow_('比較データ', '比較データ（例: ビタミンE,4,1,倍 を1行1つ）',
+        f.比較データ.map(function (d) { return [d.ラベル, d.対象値, d.比較値, d.単位].join(','); }).join('\n'),
+        { textarea: true, hint: 'ラベル,対象値,比較値,単位 の順。グラフはこの数値どおりに描かれます。' });
+  }
+  document.getElementById('confirm-form').innerHTML = html;
+  document.getElementById('missing-note').textContent =
+    state.missing.length ? '（聞き取れなかった項目: ' + state.missing.join('・') + '）' : '';
+}
+
+function collectConfirm_() {
+  var get = function (k) {
+    var el = document.querySelector('[data-field="' + k + '"]');
+    return el ? el.value.trim() : '';
+  };
+  var lines = function (k) { return get(k).split('\n').map(function (s) { return s.trim(); }).filter(Boolean); };
+  if (state.popType === 'product') {
+    var priceRaw = get('価格');
+    if (!get('商品名')) { showError('商品名は必須です。'); return null; }
+    if (priceRaw === '' || isNaN(Number(priceRaw))) { showError('価格は数字で入力してください（必須）。'); return null; }
+    return {
+      商品名: get('商品名'), 補足: get('補足'), 価格: Number(priceRaw),
+      容量: get('容量'), 生産者: get('生産者'), アピールポイント: lines('アピールポイント'),
+    };
+  }
+  if (!get('主題')) { showError('主題は必須です。'); return null; }
+  return {
+    フック: get('フック'), 主題: get('主題'), 説明文: get('説明文'), 箇条書き: lines('箇条書き'),
+    比較データ: lines('比較データ').map(function (l) {
+      var p = l.split(',');
+      return { ラベル: p[0] || '', 対象値: Number(p[1]), 比較値: Number(p[2] || 1), 単位: p[3] || '倍', 補足: '' };
+    }).filter(function (d) { return d.ラベル && isFinite(d.対象値) && isFinite(d.比較値); }),
+  };
+}
+
+function requestCatches() {
+  var fields = collectConfirm_();
+  if (!fields) return;
+  state.fields = fields;
+  showLoading('キャッチコピーを考えています…');
+  runServer('api_generateCatches', { popType: state.popType, fields: fields })
+    .then(function (catches) {
+      hideLoading();
+      state.catches = catches;
+      renderVariants();         // Task 11
+      showScreen('variants');
+    })
+    .catch(function (e) {
+      hideLoading();
+      // spec: 失敗時は手入力 1 案に退避できる
+      showError(e.message + '（「もう一度」か、手入力でキャッチを1つ書いて進むこともできます）', requestCatches);
+      var manual = prompt('キャッチコピーを手入力しますか？（キャンセルで中止）');
+      if (manual) {
+        state.catches = [{ 切り口: '手入力', キャッチ: manual }];
+        renderVariants();
+        showScreen('variants');
+      }
+    });
+}
+document.getElementById('btn-catches').addEventListener('click', requestCatches);
+document.getElementById('confirm-back').addEventListener('click', function () { showScreen('input'); });
+
 loadHome();
 </script>

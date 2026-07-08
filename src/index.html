@@ -49,7 +49,15 @@
       <button class="btn big" id="btn-process">AIで内容を整理する →</button>
     </div>
   </section>
-  <section data-screen="confirm" hidden><!-- Task 10 --></section>
+  <section data-screen="confirm" hidden>
+    <div class="steps"><span class="stepchip">1 入力</span><span class="stepchip on">2 確認</span><span class="stepchip">3 案をえらぶ</span><span class="stepchip">4 印刷</span></div>
+    <div class="ai-note">🤖 AIがインタビューから内容を抜き出しました。<b>まちがいがないか確認して、直せます。</b><span id="missing-note"></span></div>
+    <div id="confirm-form"></div>
+    <div class="btn-row">
+      <button class="btn ghost" id="confirm-back">← もどる</button>
+      <button class="btn big" id="btn-catches">この内容で3案つくる →</button>
+    </div>
+  </section>
   <section data-screen="variants" hidden><!-- Task 11 --></section>
   <section data-screen="print" hidden><!-- Task 12 --></section>
 </main>
