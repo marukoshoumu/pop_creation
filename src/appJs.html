@@ -1,5 +1,5 @@
 <script>
-var state = { popType: 'product', inputText: '', audio: null, fields: null, missing: [], catches: [], selectedIndex: 0, content: null, editingBase: null, fromReprint: false };
+var state = { popType: 'product', inputText: '', audio: null, fields: null, missing: [], catches: [], selectedIndex: 0, content: null, fromReprint: false };
 
 function runServer(fnName) {
   var args = Array.prototype.slice.call(arguments, 1);
@@ -96,10 +96,11 @@ function editPop(p) {
 }
 
 document.getElementById('btn-new').addEventListener('click', function () {
-  state = { popType: 'product', inputText: '', audio: null, fields: null, missing: [], catches: [], selectedIndex: 0, content: null, editingBase: null, fromReprint: false };
+  state = { popType: 'product', inputText: '', audio: null, fields: null, missing: [], catches: [], selectedIndex: 0, content: null, fromReprint: false };
   saved_ = false;
   document.getElementById('input-text').value = '';
   document.getElementById('audio-name').textContent = '';
+  setPopType('product');
   showScreen('input');
 });
 
