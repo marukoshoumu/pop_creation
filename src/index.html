@@ -78,9 +78,17 @@
         <button type="button" class="dc-btn" data-deco="wamodern">和モダン</button>
       </div>
     </div>
+    <div class="fonttheme">
+      <span class="ft-label">文字の大きさ</span>
+      <div class="ft-btns">
+        <button type="button" class="fs-btn" data-fs="0.85">小さめ</button>
+        <button type="button" class="fs-btn on" data-fs="1">標準</button>
+        <button type="button" class="fs-btn" data-fs="1.15">大きめ</button>
+      </div>
+    </div>
     <div class="pick-row" id="variant-picks"></div>
-    <div class="field" style="margin-top:14px"><label>選んだ案のキャッチを手直しできます</label>
-      <input class="input" id="catch-edit"></div>
+    <div class="field" style="margin-top:14px"><label>選んだ案のキャッチを手直しできます（改行したい所で Enter）</label>
+      <textarea class="input" id="catch-edit" rows="2"></textarea></div>
     <div class="btn-row">
       <button class="btn ghost" id="variants-back">← 内容を直す</button>
       <button class="btn big" id="btn-select">この案にする →</button>

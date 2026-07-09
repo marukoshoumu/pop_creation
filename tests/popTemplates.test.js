@@ -118,3 +118,14 @@ test('renderPop(explain): e1 比較データ 0 件ならグラフを出さず箇
 test('renderPop: 不明な type は throw', () => {
   assert.throws(() => t.renderPop({ type: 'x', variant: 'v1', catch: '', fields: {} }));
 });
+
+test('renderPop: fontScale が --fs スタイルに反映される（1は付けない）', () => {
+  assert.ok(!t.renderPop(productContent).includes('--fs'), 'scale=既定で --fs が付いている');
+  assert.ok(t.renderPop({ ...productContent, fontScale: 1.15 }).includes('style="--fs:1.15"'));
+  assert.ok(t.renderPop({ ...explainContent, fontScale: 0.85 }).includes('style="--fs:0.85"'));
+});
+
+test('renderPop: キャッチの改行が <br> になる（商品名など他フィールドは改行しない）', () => {
+  const html = t.renderPop({ ...productContent, catch: 'あまい！\nメロン超え' });
+  assert.ok(html.includes('あまい！<br>メロン超え'), 'キャッチの改行が反映されない');
+});

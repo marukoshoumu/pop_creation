@@ -38,18 +38,18 @@
     aspect-ratio: 180 / 70; width: 100%; padding: 3.4% 4.2%;
     display: grid; grid-template-columns: 1fr auto; grid-template-rows: auto 1fr auto; column-gap: 3%;
   }
-  .shelf .catch { grid-column: 1/3; font-size: 4cqw; font-weight: 700; line-height: 1.3; overflow: hidden;
+  .shelf .catch { grid-column: 1/3; font-size: calc(4cqw * var(--fs,1)); font-weight: 700; line-height: 1.3; overflow: hidden;
     display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; text-wrap: balance; }
-  .shelf .catch .zip { display: inline-block; color: #fff; font-size: 3.8cqw; padding: 1px 12px; border-radius: 5px; transform: rotate(-3deg); white-space: nowrap; margin-right: 10px; vertical-align: middle; }
+  .shelf .catch .zip { display: inline-block; color: #fff; font-size: calc(3.8cqw * var(--fs,1)); padding: 1px 12px; border-radius: 5px; transform: rotate(-3deg); white-space: nowrap; margin-right: 10px; vertical-align: middle; }
   .shelf .name-wrap { grid-column: 1/2; grid-row: 2/3; align-self: center; min-width: 0; overflow: hidden; }
   /* 長い商品名は最大2行で折り返して切れないようにする */
-  .shelf .name { font-size: 7.5cqw; line-height: 1.05; overflow-wrap: anywhere; word-break: auto-phrase;
+  .shelf .name { font-size: calc(7.5cqw * var(--fs,1)); line-height: 1.05; overflow-wrap: anywhere; word-break: auto-phrase;
     display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; overflow: hidden; }
-  .shelf .reading { font-size: 2.9cqw; color: #7a6f57; margin-top: 3px; }
-  .shelf .price { grid-column: 2/3; grid-row: 2/3; align-self: center; justify-self: end; font-size: 11cqw; line-height: .82; white-space: nowrap; text-align: right; }
+  .shelf .reading { font-size: calc(2.9cqw * var(--fs,1)); color: #7a6f57; margin-top: 3px; }
+  .shelf .price { grid-column: 2/3; grid-row: 2/3; align-self: center; justify-self: end; font-size: calc(11cqw * var(--fs,1)); line-height: .82; white-space: nowrap; text-align: right; }
   .shelf .price .yen { font-size: .36em; }
   .shelf .price .tax { display: block; font-size: .26em; font-family: "Klee One", sans-serif; color: #8a7a55; margin-top: 2px; }
-  .shelf .foot { grid-column: 1/3; grid-row: 3/4; align-self: end; display: flex; gap: 20px; font-size: 3.4cqw; color: #5a5030; }
+  .shelf .foot { grid-column: 1/3; grid-row: 3/4; align-self: end; display: flex; gap: 20px; font-size: calc(3.4cqw * var(--fs,1)); color: #5a5030; }
   .shelf .foot b { color: var(--ink); }
 
   /* v1 クラフト×オレンジ */
@@ -104,21 +104,21 @@
   .a4 .corner.br { bottom: 3cqw; right: 3cqw; transform: scale(-1); }
   .a4 .stamp { position: absolute; top: 3cqw; right: 3cqw; width: 16cqw; height: 16cqw; border-radius: 50%;
     display: flex; align-items: center; justify-content: center; text-align: center; font-family: "Yuji Syuku", serif; font-weight: 700;
-    color: #fff; font-size: 4.6cqw; line-height: 1.1; transform: rotate(-12deg); z-index: 3; box-shadow: 0 2px 5px rgba(0,0,0,.15); background: var(--orange); border: 2px solid rgba(255,255,255,.6); }
+    color: #fff; font-size: calc(4.6cqw * var(--fs,1)); line-height: 1.1; transform: rotate(-12deg); z-index: 3; box-shadow: 0 2px 5px rgba(0,0,0,.15); background: var(--orange); border: 2px solid rgba(255,255,255,.6); }
   .a4 .tape { position: absolute; top: -1cqw; width: 22cqw; height: 6.5cqw; background: rgba(230,200,120,.55); box-shadow: 0 1px 3px rgba(0,0,0,.1); z-index: 3; }
   .a4 .tape.l { left: 7cqw; transform: rotate(-4deg); } .a4 .tape.r { right: 7cqw; transform: rotate(3deg); }
 
   /* 共通見出し（長文キャッチでもはみ出さない控えめサイズ＋balance改行） */
-  .a4 .q1 { text-align: center; font-size: 5cqw; font-weight: 700; color: #3a3226; text-wrap: balance; }
+  .a4 .q1 { text-align: center; font-size: calc(5cqw * var(--fs,1)); font-weight: 700; color: #3a3226; text-wrap: balance; }
   .a4 .q1 .em { font-size: 2.2em; color: var(--green); vertical-align: -.12em; }
-  .a4 .q2 { text-align: center; font-size: 4.8cqw; color: #3a3226; line-height: 1.45; }
+  .a4 .q2 { text-align: center; font-size: calc(4.8cqw * var(--fs,1)); color: #3a3226; line-height: 1.45; }
   .a4 .q2 .qm { color: var(--orange); }
-  .a4 .theme { text-align: center; font-size: 7cqw; line-height: 1.3; color: var(--ink); text-wrap: balance; }
+  .a4 .theme { text-align: center; font-size: calc(7cqw * var(--fs,1)); line-height: 1.3; color: var(--ink); text-wrap: balance; }
   .a4.e2 .theme { color: var(--ink); }
   .a4.e3 .theme { color: var(--green); text-align: left; }
-  .a4 .hook { font-size: 4.4cqw; color: #5a5030; text-wrap: balance; }
-  .a4 .body-text { font-size: 3.5cqw; line-height: 1.7; color: #3a3226; text-wrap: pretty; }
-  .a4 .foot { text-align: center; font-size: 5.2cqw; color: var(--ink); line-height: 1.5; text-wrap: balance; }
+  .a4 .hook { font-size: calc(4.4cqw * var(--fs,1)); color: #5a5030; text-wrap: balance; }
+  .a4 .body-text { font-size: calc(3.5cqw * var(--fs,1)); line-height: 1.7; color: #3a3226; text-wrap: pretty; }
+  .a4 .foot { text-align: center; font-size: calc(5.2cqw * var(--fs,1)); color: var(--ink); line-height: 1.5; text-wrap: balance; }
   .a4 .foot .mk, .a4 .body-text .mk { background: linear-gradient(transparent 58%,#ffe08a 58%); }
   /* 日本語を文節単位で改行（不自然な語中改行を防ぐ・Chrome） */
   .a4 .q1, .a4 .theme, .a4 .foot, .a4 .hook, .a4 .list li, .chart .cap, .numcard .vs, .shelf .catch { word-break: auto-phrase; }
@@ -128,33 +128,33 @@
   /* 棒グラフ */
   .charts { display: flex; gap: 6%; }
   .chart { flex: 1; text-align: center; }
-  .chart .metric { display: inline-block; background: var(--green); color: #fff; font-weight: 700; font-size: 4cqw; padding: 2px 12px; border-radius: 16px; }
+  .chart .metric { display: inline-block; background: var(--green); color: #fff; font-weight: 700; font-size: calc(4cqw * var(--fs,1)); padding: 2px 12px; border-radius: 16px; }
   .chart.fe .metric { background: var(--pink); }
-  .chart .mult { font-size: 11cqw; color: var(--green); line-height: .9; margin: 2% 0 1%; transform: rotate(-4deg); white-space: nowrap; }
+  .chart .mult { font-size: calc(11cqw * var(--fs,1)); color: var(--green); line-height: .9; margin: 2% 0 1%; transform: rotate(-4deg); white-space: nowrap; }
   .chart.fe .mult { color: var(--pink); }
   .chart .bars { display: flex; align-items: flex-end; justify-content: center; gap: 14%; height: 26cqw; border-bottom: 3px solid var(--ink); padding: 0 6%; }
   .chart .bar { width: 36%; border: 2.5px solid var(--ink); border-bottom: none; }
   .chart .bar.hi { background: repeating-linear-gradient(45deg,var(--bar-green) 0 6px,#a8d99a 6px 12px); }
   .chart.fe .bar.hi { background: repeating-linear-gradient(45deg,var(--bar-pink) 0 6px,#f7c3d5 6px 12px); }
   .chart .bar.lo { background: #fff; }
-  .chart .lg { display: flex; justify-content: center; gap: 14%; padding: 0 6%; font-size: 4cqw; margin-top: 6px; font-weight: 700; }
+  .chart .lg { display: flex; justify-content: center; gap: 14%; padding: 0 6%; font-size: calc(4cqw * var(--fs,1)); margin-top: 6px; font-weight: 700; }
   .chart .lg span { width: 36%; }
-  .chart .cap { font-size: 3.4cqw; color: #5a5030; margin-top: 6px; text-wrap: balance; }
+  .chart .cap { font-size: calc(3.4cqw * var(--fs,1)); color: #5a5030; margin-top: 6px; text-wrap: balance; }
 
   /* 数字カード（e2） */
   .numbers { display: grid; grid-template-columns: minmax(0,1fr) minmax(0,1fr); gap: 5%; }
   .numcard { border: 3px solid var(--ink); border-radius: 165px 15px 155px 15px/15px 155px 15px 165px; padding: 14% 3%; text-align: center; }
-  .numcard .label { font-size: 4.4cqw; font-weight: 700; }
-  .numcard .big { font-size: 13.5cqw; line-height: 1; margin: 7% 0; white-space: nowrap; }
+  .numcard .label { font-size: calc(4.4cqw * var(--fs,1)); font-weight: 700; }
+  .numcard .big { font-size: calc(13.5cqw * var(--fs,1)); line-height: 1; margin: 7% 0; white-space: nowrap; }
   .numcard.g .big { color: var(--green); } .numcard.p .big { color: var(--pink); }
-  .numcard .vs { font-size: 3.9cqw; color: #6b655c; text-wrap: balance; }
+  .numcard .vs { font-size: calc(3.9cqw * var(--fs,1)); color: #6b655c; text-wrap: balance; }
   /* 数字カード無し時の全幅ボックス */
   .pointlist { display: flex; flex-direction: column; gap: 4%; }
-  .pointbox { border: 3px solid var(--ink); border-radius: 155px 12px 145px 12px/12px 145px 12px 155px; padding: 4.5% 6%; font-size: 5cqw; font-weight: 700; text-align: center; }
+  .pointbox { border: 3px solid var(--ink); border-radius: 155px 12px 145px 12px/12px 145px 12px 155px; padding: 4.5% 6%; font-size: calc(5cqw * var(--fs,1)); font-weight: 700; text-align: center; }
 
   /* チェックリスト */
   .list { list-style: none; display: flex; flex-direction: column; gap: 5%; flex: 1; justify-content: center; }
-  .list li { display: flex; gap: 14px; align-items: baseline; font-size: 5.4cqw; font-weight: 700; }
+  .list li { display: flex; gap: 14px; align-items: baseline; font-size: calc(5.4cqw * var(--fs,1)); font-weight: 700; }
   .list .mark { color: var(--orange); flex-shrink: 0; }
   .list b { background: linear-gradient(transparent 55%,#ffe08a 55%); }
 </style>

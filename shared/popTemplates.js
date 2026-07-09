@@ -10,16 +10,27 @@ function escapeHtml(s) {
     .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
 }
 
-/** 末尾の ？/? を強調 span で包む（見出し用） */
+/** エスケープ後、改行(\n)を <br> に変換（キャッチの任意改行を反映） */
+function nl2brHtml_(s) {
+  return escapeHtml(s).replace(/\r?\n/g, '<br>');
+}
+
+/** 末尾の ？/? を強調 span で包む（見出し用）。改行も反映 */
 function emphasizeQ_(s) {
-  var t = escapeHtml(s);
-  return t.replace(/([？?])\s*$/, '<span class="qm">$1</span>');
+  return nl2brHtml_(s).replace(/([？?])\s*$/, '<span class="qm">$1</span>');
 }
 
 function themeClass_(content) {
   var t = content.fontTheme;
   if (t !== 'pen' && t !== 'pop') t = 'fude';  // 既定=筆
   return 'theme-' + t;
+}
+
+/** 微調整: 文字サイズ倍率 --fs のインラインスタイル（既定 1） */
+function fsStyle_(content) {
+  var s = Number(content.fontScale);
+  if (!isFinite(s) || s <= 0 || s === 1) return '';
+  return ' style="--fs:' + s + '"';
 }
 
 function decoName_(content) {
@@ -69,8 +80,8 @@ function renderProduct_(c) {
     ? '<span class="zip">' + escapeHtml(c.catchAngle) + '</span>'
     : '';
   return [
-    '<div class="pop shelf ' + escapeHtml(c.variant) + ' ' + themeClass_(c) + '">',
-    '  <div class="catch">' + badge + escapeHtml(c.catch) + '</div>',
+    '<div class="pop shelf ' + escapeHtml(c.variant) + ' ' + themeClass_(c) + '"' + fsStyle_(c) + '>',
+    '  <div class="catch">' + badge + nl2brHtml_(c.catch) + '</div>',
     '  <div class="name-wrap"><div class="name">' + escapeHtml(f.商品名) + '</div>',
     f.補足 ? '    <div class="reading">' + escapeHtml(f.補足) + '</div>' : '',
     '  </div>',
@@ -154,7 +165,7 @@ function renderExplain_(c) {
 
   if (v === 'e2') {
     // 数字インパクト型
-    header.push('<div class="theme">' + escapeHtml(c.catch) + '</div>');
+    header.push('<div class="theme">' + nl2brHtml_(c.catch) + '</div>');
     mid.push(numberCardsHtml_(f.比較データ) || pointBoxesHtml_(f.箇条書き));
     if (f.説明文) mid.push('<div class="body-text">' + escapeHtml(f.説明文) + '</div>');
     foot = '<div class="foot">' + escapeHtml(f.主題) + '、いかがですか？</div>';
@@ -164,7 +175,7 @@ function renderExplain_(c) {
     header.push('<div class="theme">' + escapeHtml(f.主題) + '</div>');
     mid.push(listHtml_(f.箇条書き) ||
       (f.説明文 ? '<div class="body-text">' + escapeHtml(f.説明文) + '</div>' : ''));
-    foot = '<div class="foot">' + escapeHtml(c.catch) + '</div>';
+    foot = '<div class="foot">' + nl2brHtml_(c.catch) + '</div>';
   } else {
     // e1 問いかけ型
     header.push('<div class="q1">' + escapeHtml(f.主題) + '</div>');
@@ -175,7 +186,7 @@ function renderExplain_(c) {
   }
 
   return [
-    '<div class="pop a4 ' + escapeHtml(c.variant) + ' ' + themeClass_(c) + ' deco-' + deco + '">',
+    '<div class="pop a4 ' + escapeHtml(c.variant) + ' ' + themeClass_(c) + ' deco-' + deco + '"' + fsStyle_(c) + '>',
     decoHtml_(deco),
     '<div class="a4-body">',
     header.filter(Boolean).join('\n'),
