@@ -181,8 +181,8 @@ document.getElementById('btn-process').addEventListener('click', processInput);
 function startManualEntry() {
   state.inputText = document.getElementById('input-text').value.trim();
   state.fields = state.popType === 'product'
-    ? { 商品名: '', 補足: '', 価格: null, 容量: '', 生産者: '', アピールポイント: [] }
-    : { フック: '', 主題: '', 説明文: '', 箇条書き: [], 比較データ: [] };
+    ? { 商品名: '', 補足: '', 価格: null, 容量: '', 生産者: '', 生産者のひとこと: '', アピールポイント: [] }
+    : { フック: '', 主題: '', 生産者: '', 生産者のひとこと: '', 説明文: '', 箇条書き: [], 比較データ: [] };
   state.missing = [];
   renderConfirm();
   showScreen('confirm');
@@ -210,10 +210,15 @@ function renderConfirm() {
         { warn: true, hint: '※ ここで入力した数字が“そのまま”印刷されます。かならず確認してください。' }) +
       fieldRow_('容量', '容量（例: 10g、3本）', f.容量) +
       fieldRow_('生産者', '生産者・売り場名', f.生産者) +
+      fieldRow_('生産者のひとこと', '生産者のひとこと（本人の言葉のまま。「」内に印刷）', f.生産者のひとこと || '',
+        { hint: '例: 今年は雪が多くて、そのぶん甘くなったよ。空欄なら印刷されません。' }) +
       fieldRow_('アピールポイント', 'アピールポイント（1行1つ）', f.アピールポイント.join('\n'), { textarea: true });
   } else {
     html = fieldRow_('フック', 'フック（興味を引く一言）', f.フック) +
       fieldRow_('主題', '主題', f.主題) +
+      fieldRow_('生産者', '生産者（人名。例: 佐藤さん）', f.生産者 || '') +
+      fieldRow_('生産者のひとこと', '生産者のひとこと（本人の言葉のまま。吹き出しで印刷）', f.生産者のひとこと || '',
+        { hint: '空欄なら吹き出しは印刷されません。' }) +
       fieldRow_('説明文', '説明文', f.説明文, { textarea: true }) +
       fieldRow_('箇条書き', '箇条書き（1行1つ）', f.箇条書き.join('\n'), { textarea: true }) +
       fieldRow_('比較データ', '比較データ（例: ビタミンE,4,1,倍,他社比 を1行1つ）',
@@ -238,12 +243,15 @@ function collectConfirm_() {
     if (Number(priceRaw) < 0) { showError('価格は0以上の数字で入力してください。'); return null; }
     return {
       商品名: get('商品名'), 補足: get('補足'), 価格: Number(priceRaw),
-      容量: get('容量'), 生産者: get('生産者'), アピールポイント: lines('アピールポイント'),
+      容量: get('容量'), 生産者: get('生産者'), 生産者のひとこと: get('生産者のひとこと'),
+      アピールポイント: lines('アピールポイント'),
     };
   }
   if (!get('主題')) { showError('主題は必須です。'); return null; }
   return {
-    フック: get('フック'), 主題: get('主題'), 説明文: get('説明文'), 箇条書き: lines('箇条書き'),
+    フック: get('フック'), 主題: get('主題'),
+    生産者: get('生産者'), 生産者のひとこと: get('生産者のひとこと'),
+    説明文: get('説明文'), 箇条書き: lines('箇条書き'),
     比較データ: lines('比較データ').map(function (l) {
       var p = l.split(',');
       return { ラベル: p[0] || '', 対象値: Number(p[1]), 比較値: Number(p[2] || 1), 単位: p[3] || '倍', 補足: (p[4] || '').trim() };

@@ -34,6 +34,7 @@ function validateProductFields(obj) {
     容量: asString_(o['容量']),
     生産者: asString_(o['生産者']),
     アピールポイント: asStringArray_(o['アピールポイント']),
+    生産者のひとこと: asString_(o['生産者のひとこと']),
   };
   const missing = [];
   if (!fields.商品名) missing.push('商品名');
@@ -68,6 +69,8 @@ function validateExplainFields(obj) {
     説明文: asString_(o['説明文']),
     箇条書き: asStringArray_(o['箇条書き']),
     比較データ: 比較データ,
+    生産者: asString_(o['生産者']),
+    生産者のひとこと: asString_(o['生産者のひとこと']),
   };
   const missing = [];
   if (!fields.主題) missing.push('主題');

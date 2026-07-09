@@ -45,12 +45,24 @@
   /* 長い商品名は最大2行で折り返して切れないようにする */
   .shelf .name { font-size: calc(7.5cqw * var(--fs,1)); line-height: 1.05; overflow-wrap: anywhere; word-break: auto-phrase;
     display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; overflow: hidden; }
+  /* 8文字以上の長い商品名は自動で少し縮めて1行に収める（筆フォントは字幅が広いため） */
+  .shelf .name.long { font-size: calc(5.8cqw * var(--fs,1)); }
   .shelf .reading { font-size: calc(2.9cqw * var(--fs,1)); color: #7a6f57; margin-top: 3px; }
   .shelf .price { grid-column: 2/3; grid-row: 2/3; align-self: center; justify-self: end; font-size: calc(11cqw * var(--fs,1)); line-height: .82; white-space: nowrap; text-align: right; }
   .shelf .price .yen { font-size: .36em; }
   .shelf .price .tax { display: block; font-size: .26em; font-family: "Klee One", sans-serif; color: #8a7a55; margin-top: 2px; }
-  .shelf .foot { grid-column: 1/3; grid-row: 3/4; align-self: end; display: flex; gap: 20px; font-size: calc(3.4cqw * var(--fs,1)); color: #5a5030; }
+  .shelf .foot { grid-column: 1/3; grid-row: 3/4; align-self: end; display: flex; align-items: flex-end; gap: 14px; font-size: calc(3.4cqw * var(--fs,1)); color: #5a5030; }
   .shelf .foot b { color: var(--ink); }
+  .shelf .foot .foot-l { flex: 1; min-width: 0; display: flex; align-items: baseline; gap: 10px; }
+  /* 名札（生産者名） */
+  .shelf .ptag { flex-shrink: 0; border: 2px solid var(--ink); border-radius: 8px 3px 9px 3px; padding: 0 10px;
+    background: rgba(255,255,255,.75); color: var(--ink); font-weight: 700; transform: rotate(-1deg); }
+  /* 生産者のひとこと（1〜2行でクランプ） */
+  .shelf .pquote { min-width: 0; font-size: calc(3.1cqw * var(--fs,1)); color: var(--ink); line-height: 1.3;
+    display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; overflow: hidden; }
+  /* 手描き風の波線下線（価格の下・v1/v3） */
+  .shelf.v1 .price::after, .shelf.v3 .price::after { content: ''; display: block; height: 1.3cqw; margin-top: .7cqw;
+    background: radial-gradient(circle at 50% 0, transparent 52%, currentColor 58% 74%, transparent 80%) 0 0/10px 100%; opacity: .6; }
 
   /* v1 クラフト×オレンジ */
   .shelf.v1 { background: repeating-linear-gradient(0deg,transparent 0 38px,rgba(150,110,50,.05) 38px 39px),linear-gradient(160deg,#f7efd8,#eddfbe); transform: rotate(-.4deg); }
@@ -152,8 +164,20 @@
   .pointlist { display: flex; flex-direction: column; gap: 4%; }
   .pointbox { border: 3px solid var(--ink); border-radius: 155px 12px 145px 12px/12px 145px 12px 155px; padding: 4.5% 6%; font-size: calc(5cqw * var(--fs,1)); font-weight: 700; text-align: center; }
 
-  /* チェックリスト */
+  /* 生産者のひとこと吹き出し（説明型） */
+  .quote { position: relative; margin-top: 2%; padding: 3.2% 5% 2.6%; background: var(--paper-white);
+    border: 2.5px solid var(--ink); border-radius: 145px 18px 155px 18px/18px 155px 18px 145px;
+    transform: rotate(-.6deg); }
+  .quote::after { content: ''; position: absolute; left: 13%; bottom: -1.8cqw; width: 3.2cqw; height: 3.2cqw;
+    background: var(--paper-white); border-right: 2.5px solid var(--ink); border-bottom: 2.5px solid var(--ink);
+    transform: rotate(45deg); }
+  .quote .qtext { font-size: calc(4.4cqw * var(--fs,1)); line-height: 1.55; color: var(--ink); word-break: auto-phrase; }
+  .quote .qwho { text-align: right; font-size: calc(3cqw * var(--fs,1)); color: #7a6f57; margin-top: 1%; }
+
+  /* チェックリスト（手書きの揺らぎ: 行ごとに微妙な傾き） */
   .list { list-style: none; display: flex; flex-direction: column; gap: 5%; flex: 1; justify-content: center; }
+  .list li:nth-child(odd) { transform: rotate(-.35deg); }
+  .list li:nth-child(even) { transform: rotate(.3deg); }
   .list li { display: flex; gap: 14px; align-items: baseline; font-size: calc(5.4cqw * var(--fs,1)); font-weight: 700; }
   .list .mark { color: var(--orange); flex-shrink: 0; }
   .list b { background: linear-gradient(transparent 55%,#ffe08a 55%); }

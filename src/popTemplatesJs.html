@@ -69,6 +69,21 @@ function decoHtml_(deco) {
     cornerSvg_('tl') + cornerSvg_('tr') + cornerSvg_('bl') + cornerSvg_('br');
 }
 
+/* ===== 生産者の声（共通） ===== */
+/** 先頭/末尾の「」を外す（テンプレート側で必ず付けるため二重を防ぐ） */
+function stripQuotes_(s) {
+  return String(s || '').replace(/^\s*「/, '').replace(/」\s*$/, '').trim();
+}
+
+/** 説明型用: 手描き吹き出し（生産者のひとこと）。無ければ空 */
+function quoteHtml_(f) {
+  var q = stripQuotes_(f.生産者のひとこと);
+  if (!q) return '';
+  var who = f.生産者 ? escapeHtml(f.生産者) : '生産者';
+  return '<div class="quote"><div class="qtext">「' + escapeHtml(q) + '」</div>' +
+    '<div class="qwho">— ' + who + 'より</div></div>';
+}
+
 /* ===== 商品型（棚札） ===== */
 function shelfPriceHtml_(価格) {
   if (価格 === null || 価格 === undefined || 価格 === '') return '<div class="price"></div>';
@@ -81,14 +96,19 @@ function renderProduct_(c) {
   var badge = c.catchAngle
     ? '<span class="zip">' + escapeHtml(c.catchAngle) + '</span>'
     : '';
+  var q = stripQuotes_(f.生産者のひとこと);
+  var footL = [
+    f.生産者 ? '<span class="ptag">' + escapeHtml(f.生産者) + '</span>' : '',
+    q ? '<span class="pquote">「' + escapeHtml(q) + '」</span>' : '',
+  ].filter(Boolean).join('');
   return [
     '<div class="pop shelf ' + escapeHtml(c.variant) + ' ' + themeClass_(c) + '"' + fsStyle_(c) + '>',
     '  <div class="catch">' + badge + nl2brHtml_(c.catch) + '</div>',
-    '  <div class="name-wrap"><div class="name">' + escapeHtml(f.商品名) + '</div>',
+    '  <div class="name-wrap"><div class="name' + (String(f.商品名 || '').length >= 8 ? ' long' : '') + '">' + escapeHtml(f.商品名) + '</div>',
     f.補足 ? '    <div class="reading">' + escapeHtml(f.補足) + '</div>' : '',
     '  </div>',
     '  ' + shelfPriceHtml_(f.価格),
-    '  <div class="foot"><span>' + escapeHtml(f.生産者) + '</span><span><b>' + escapeHtml(f.容量) + '</b></span></div>',
+    '  <div class="foot"><div class="foot-l">' + footL + '</div><span class="amount"><b>' + escapeHtml(f.容量) + '</b></span></div>',
     '</div>',
   ].filter(Boolean).join('\n');
 }
@@ -165,26 +185,28 @@ function renderExplain_(c) {
   var mid = [];     // 中央（残り高さいっぱいに広げる）
   var foot = '';    // 下部（締め）
 
+  var quote = quoteHtml_(f);  // 生産者のひとこと吹き出し（あれば各レイアウトの下部に）
+
   if (v === 'e2') {
-    // 数字インパクト型
+    // 数字インパクト型。ひとことがあれば機械的な定型文の代わりに「声」で締める
     header.push('<div class="theme">' + nl2brHtml_(c.catch) + '</div>');
     mid.push(numberCardsHtml_(f.比較データ) || pointBoxesHtml_(f.箇条書き));
     if (f.説明文) mid.push('<div class="body-text">' + escapeHtml(f.説明文) + '</div>');
-    foot = '<div class="foot">' + escapeHtml(f.主題) + '、いかがですか？</div>';
+    foot = quote || '<div class="foot">' + escapeHtml(f.主題) + '、いかがですか？</div>';
   } else if (v === 'e3') {
     // やさしい解説型
     if (f.フック) header.push('<div class="hook">' + escapeHtml(f.フック) + '</div>');
     header.push('<div class="theme">' + escapeHtml(f.主題) + '</div>');
     mid.push(listHtml_(f.箇条書き) ||
       (f.説明文 ? '<div class="body-text">' + escapeHtml(f.説明文) + '</div>' : ''));
-    foot = '<div class="foot">' + nl2brHtml_(c.catch) + '</div>';
+    foot = quote + '<div class="foot">' + nl2brHtml_(c.catch) + '</div>';
   } else {
     // e1 問いかけ型
     header.push('<div class="q1">' + escapeHtml(f.主題) + '</div>');
     header.push('<div class="q2">' + emphasizeQ_(c.catch) + '</div>');
     mid.push(chartsHtml_(f.比較データ) || listHtml_(f.箇条書き) ||
       (f.説明文 ? '<div class="body-text">' + escapeHtml(f.説明文) + '</div>' : ''));
-    foot = '<div class="foot">' + escapeHtml(f.フック || f.説明文 || '') + '</div>';
+    foot = quote + '<div class="foot">' + escapeHtml(f.フック || f.説明文 || '') + '</div>';
   }
 
   return [

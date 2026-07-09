@@ -129,3 +129,29 @@ test('renderPop: キャッチの改行が <br> になる（商品名など他フ
   const html = t.renderPop({ ...productContent, catch: 'あまい！\nメロン超え' });
   assert.ok(html.includes('あまい！<br>メロン超え'), 'キャッチの改行が反映されない');
 });
+
+test('renderPop(product): 生産者のひとことが「」付きで foot に出る（既存の「」は二重にしない）', () => {
+  const h1 = t.renderPop({ ...productContent, fields: { ...productContent.fields, 生産者のひとこと: '今年は特に香りがいいよ' } });
+  assert.ok(h1.includes('「今年は特に香りがいいよ」'), 'ひとことが出ていない');
+  assert.ok(h1.includes('class="ptag"'), '生産者名札が出ていない');
+  const h2 = t.renderPop({ ...productContent, fields: { ...productContent.fields, 生産者のひとこと: '「もう括られてる」' } });
+  assert.ok(h2.includes('「もう括られてる」') && !h2.includes('「「'), '「」が二重になっている');
+});
+
+test('renderPop(product): ひとこと無しなら pquote を出さない（名札は生産者名があれば出す）', () => {
+  const html = t.renderPop(productContent);
+  assert.ok(!html.includes('class="pquote"'));
+  assert.ok(html.includes('class="ptag"'));
+});
+
+test('renderPop(explain): ひとことがあれば吹き出し（quote）が出て、e2 の定型文を置き換える', () => {
+  const withQ = { ...explainContent.fields, 生産者: '佐藤さん', 生産者のひとこと: 'まるごと挽くから香りが違うんだ' };
+  const e2 = t.renderPop({ ...explainContent, variant: 'e2', fields: withQ });
+  assert.ok(e2.includes('class="quote"'), '吹き出しが出ていない');
+  assert.ok(e2.includes('佐藤さんより'), '発言者名が出ていない');
+  assert.ok(!e2.includes('いかがですか？'), 'ひとこと有り時も定型文が残っている');
+  const e2noQ = t.renderPop({ ...explainContent, variant: 'e2' });
+  assert.ok(e2noQ.includes('いかがですか？'), 'ひとこと無し時のフォールバック定型文が消えている');
+  const e1 = t.renderPop({ ...explainContent, fields: withQ });
+  assert.ok(e1.includes('class="quote"'), 'e1 に吹き出しが出ていない');
+});
