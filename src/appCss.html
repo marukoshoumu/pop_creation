@@ -75,7 +75,8 @@ textarea.input, .input.area { min-height: 96px; line-height: 1.7; resize: vertic
   padding: 10px 16px; font-size: .82rem; margin-bottom: 18px;
 }
 
-.history-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-top: 18px; }
+.history-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; margin-top: 18px; }
+.history-card .pick-preview { margin-bottom: 8px; }
 .history-card { background: #faf8f3; border: 1px solid #e4ddcd; border-radius: 10px; padding: 10px; }
 .history-card .meta { font-size: .72rem; color: #6b655c; margin: 8px 0 6px; line-height: 1.4; }
 .history-card .meta b { color: var(--ink); font-size: .8rem; }

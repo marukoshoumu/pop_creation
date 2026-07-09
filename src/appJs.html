@@ -46,10 +46,15 @@ function loadHome() {
   runServer('api_listPops').then(function (list) {
     if (!list.length) { grid.innerHTML = '<p class="muted">まだPOPがありません。「新しいPOPをつくる」から始めましょう。</p>'; return; }
     grid.innerHTML = list.map(function (p, i) {
-      var img = p.サムネ
-        ? '<img src="' + p.サムネ + '" alt="" style="width:100%;border-radius:4px">'
-        : '<div class="muted" style="padding:20px;text-align:center">' + escapeHtml(p.商品名) + '</div>';
-      return '<div class="history-card">' + img +
+      // サムネは画像化せず、保存済み内容JSONから実物ミニプレビューを描く（常に鮮明・正確）
+      var preview = '<div class="muted" style="padding:20px;text-align:center">' + escapeHtml(p.商品名) + '</div>';
+      try {
+        var c = JSON.parse(p.内容JSON);
+        if (c && (c.type === 'product' || c.type === 'explain') && c.fields) {
+          preview = '<div class="pick-preview">' + renderPop(c) + '</div>';
+        }
+      } catch (e) { /* 壊れた行はテキスト表示にフォールバック */ }
+      return '<div class="history-card">' + preview +
         '<div class="meta"><b>' + escapeHtml(p.商品名) + '</b><br>' + escapeHtml(p.種別) + '・' + escapeHtml(p.サイズ) + ' ／ ' + escapeHtml(p.作成日時) + '</div>' +
         '<button class="btn mini" data-reprint="' + i + '">🖨 再印刷</button> ' +
         '<button class="btn mini ghost" data-edit="' + i + '">編集</button></div>';

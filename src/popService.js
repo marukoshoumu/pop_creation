@@ -49,16 +49,9 @@ function api_savePop(record, base64Png) {
 }
 
 function api_listPops() {
+  // サムネはクライアント側で内容JSONから実物描画するため、Drive PNG は取得しない（高速）
   return listPops(50).map(function (p) {
-    // サムネは Drive 公開 URL でなく base64 で返す（アクセス権を Drive 側に依存させない）
-    var thumb = '';
-    if (p.PNGファイルID) {
-      try {
-        thumb = 'data:image/png;base64,' +
-          Utilities.base64Encode(DriveApp.getFileById(p.PNGファイルID).getBlob().getBytes());
-      } catch (e) { /* ファイル削除済みなら文字表示にフォールバック */ }
-    }
-    return { ID: p.ID, 作成日時: p.作成日時, 種別: p.種別, サイズ: p.サイズ, 商品名: p.商品名, サムネ: thumb, 内容JSON: p.内容JSON };
+    return { ID: p.ID, 作成日時: p.作成日時, 種別: p.種別, サイズ: p.サイズ, 商品名: p.商品名, 内容JSON: p.内容JSON };
   });
 }
 
