@@ -10,9 +10,10 @@ function escapeHtml(s) {
     .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
 }
 
-/** エスケープ後、改行(\n)を <br> に変換（キャッチの任意改行を反映） */
+/** エスケープ後、改行(\n)を <br> に変換（キャッチの任意改行を反映）。
+ * 空行（連続改行）は1つの <br> にまとめる — 棚札の行数制限に空行が食われて文字が消えるのを防ぐ */
 function nl2brHtml_(s) {
-  return escapeHtml(s).replace(/\r?\n/g, '<br>');
+  return escapeHtml(s).replace(/(?:[ \t]*\r?\n)+[ \t]*/g, '<br>');
 }
 
 /** 末尾の ？/? を強調 span で包む（見出し用）。改行も反映 */
@@ -174,7 +175,8 @@ function renderProduct_(c) {
     '<div class="pop shelf ' + escapeHtml(c.variant) + ' ' + themeClass_(c) + accentClass_(c) +
       portraitAdjustClass_(c) + frameClass_(c) + shelfDecoClass_(c) + '"' + fsStyle_(c) + '>',
     shelfDecoHtml_(c),
-    '  <div class="catch">' + badge + nl2brHtml_(c.catch) + '</div>',
+    // 手動改行があるキャッチは行数制限を緩めて（3行）文字が消えないようにする
+    '  <div class="catch' + (/\n/.test(String(c.catch || '')) ? ' manual' : '') + '">' + badge + nl2brHtml_(c.catch) + '</div>',
     '  <div class="name-wrap"><div class="name' + (String(f.商品名 || '').length >= 8 ? ' long' : '') + '">' + escapeHtml(f.商品名) + '</div>',
     f.補足 ? '    <div class="reading">' + escapeHtml(f.補足) + '</div>' : '',
     '  </div>',

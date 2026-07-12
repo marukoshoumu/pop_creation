@@ -40,6 +40,8 @@
   }
   .shelf .catch { grid-column: 1/3; font-size: calc(4cqw * var(--fs,1)); font-weight: 700; line-height: 1.3; overflow: hidden;
     display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; text-wrap: balance; }
+  /* 手動改行入りは3行まで許容（ユーザーの改行が行数制限で消えないように） */
+  .shelf .catch.manual { -webkit-line-clamp: 3; text-wrap: initial; }
   .shelf .catch .zip { display: inline-block; color: #fff; font-size: calc(3.8cqw * var(--fs,1)); padding: 1px 12px; border-radius: 5px; transform: rotate(-3deg); white-space: nowrap; margin-right: 10px; vertical-align: middle; }
   .shelf .name-wrap { grid-column: 1/2; grid-row: 2/3; align-self: center; min-width: 0; overflow: hidden; }
   /* 長い商品名は最大2行で折り返して切れないようにする */
@@ -53,7 +55,7 @@
   .shelf .price .tax { display: block; font-size: .26em; font-family: "Klee One", sans-serif; color: #8a7a55; margin-top: 2px; }
   .shelf .foot { grid-column: 1/3; grid-row: 3/4; align-self: end; display: flex; align-items: flex-end; gap: 14px; font-size: calc(3.4cqw * var(--fs,1)); color: #5a5030; }
   .shelf .foot b { color: var(--ink); }
-  .shelf .foot .foot-l { flex: 1; min-width: 0; display: flex; align-items: baseline; gap: 10px; }
+  .shelf .foot .foot-l { flex: 1; min-width: 0; display: flex; align-items: center; gap: 10px; }
   /* 名札（生産者名） */
   .shelf .ptag { flex-shrink: 0; border: 2px solid var(--ink); border-radius: 8px 3px 9px 3px; padding: 0 10px;
     background: rgba(255,255,255,.75); color: var(--ink); font-weight: 700; transform: rotate(-1deg); }
@@ -209,10 +211,13 @@
   .pface { flex-shrink: 0; display: inline-flex; border-radius: 50%; overflow: hidden;
     border: 2px solid var(--ink); background: #fff; transform: rotate(-2deg); }
   .pface img { width: 100%; height: 100%; object-fit: cover; object-position: 50% 18%; display: block; }
-  .shelf .pface { width: 11cqw; height: 11cqw; align-self: center; }
+  /* 棚札の似顔絵はマイナスマージンで行の高さへの寄与を約7cqwに固定する。
+     でないと大きめ似顔絵が下段を押し広げ、固定高グリッドがキャッチ行を圧縮して
+     （overflow:hidden の行は最小高0まで縮む）手直しした2行目が消える */
+  .shelf .pface { width: 11cqw; height: 11cqw; align-self: center; margin: -2cqw 0; }
   /* 似顔絵の大きさ（小/標準/大） */
-  .shelf.psize-s .pface { width: 8cqw; height: 8cqw; }
-  .shelf.psize-l .pface { width: 15cqw; height: 15cqw; }
+  .shelf.psize-s .pface { width: 8cqw; height: 8cqw; margin: -0.5cqw 0; }
+  .shelf.psize-l .pface { width: 14cqw; height: 14cqw; margin: -3.5cqw 0; }
   /* 似顔絵の位置: 右（名札より後ろ・容量の隣） */
   .shelf.ppos-r .foot-l .pface { order: 9; margin-left: auto; }
   /* 説明型: 吹き出しの横に大きめの似顔絵 */

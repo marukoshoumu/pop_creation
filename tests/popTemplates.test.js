@@ -130,6 +130,13 @@ test('renderPop: キャッチの改行が <br> になる（商品名など他フ
   assert.ok(html.includes('あまい！<br>メロン超え'), 'キャッチの改行が反映されない');
 });
 
+test('renderPop: キャッチの空行は1つの<br>にまとめ、手動改行時は manual クラスで行数制限を緩める', () => {
+  const html = t.renderPop({ ...productContent, catch: 'おろしたて香る。\n\n真妻わさび100%' });
+  assert.ok(html.includes('おろしたて香る。<br>真妻わさび100%'), '空行が<br>2つになり行数制限で文字が消える');
+  assert.ok(html.includes('class="catch manual"'), '手動改行なのに manual クラスがない');
+  assert.ok(t.renderPop(productContent).includes('class="catch"'), '改行なしなのに manual が付いた');
+});
+
 test('renderPop(product): 生産者のひとことが「」付きで foot に出る（既存の「」は二重にしない）', () => {
   const h1 = t.renderPop({ ...productContent, fields: { ...productContent.fields, 生産者のひとこと: '今年は特に香りがいいよ' } });
   assert.ok(h1.includes('「今年は特に香りがいいよ」'), 'ひとことが出ていない');
