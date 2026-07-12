@@ -39,6 +39,27 @@ function decoName_(content) {
   return d;
 }
 
+/* ===== 微調整B-lite: 色あい・パーツ表示/位置（内容JSONに保存され再印刷で復元） ===== */
+var ACCENTS_ = { red: 1, green: 1, orange: 1, pink: 1 };
+
+/** 色あい: accent-* が --ac を定義し、has-ac がアクセント要素を一括上書きする */
+function accentClass_(content) {
+  var a = content.accent;
+  return ACCENTS_[a] ? ' accent-' + a + ' has-ac' : '';
+}
+
+function adjustOf_(content) {
+  return content.adjust || {};
+}
+
+/** スタンプ位置(tr/tl/off)をルートクラスにも出す（見出しの逃げパディング切替用） */
+function stampClass_(content) {
+  var s = adjustOf_(content).stamp;
+  if (s === 'tl') return ' stamp-tl';
+  if (s === 'off') return ' stamp-off';
+  return '';
+}
+
 /** 桜/角飾りの SVG（説明型 装飾用） */
 function cornerSvg_(pos, kind) {
   if (kind === 'sakura') {
@@ -52,12 +73,17 @@ function cornerSvg_(pos, kind) {
 }
 
 /** 装飾テーマに応じたオーバーレイ HTML（コンテンツの外側・.pop 直下に置く） */
-function decoHtml_(deco) {
+function decoHtml_(deco, adjust) {
+  var pos = (adjust || {}).stamp;
+  var stamp = function (label, cls) {
+    if (pos === 'off') return '';
+    return '<div class="stamp' + (pos === 'tl' ? ' tl' : '') + (cls ? ' ' + cls : '') + '">' + label + '</div>';
+  };
   if (deco === 'lively') {
-    return '<div class="deco tape l"></div><div class="deco tape r"></div><div class="stamp">おすすめ</div>';
+    return '<div class="deco tape l"></div><div class="deco tape r"></div>' + stamp('おすすめ');
   }
   if (deco === 'season') {
-    return cornerSvg_('tl', 'sakura') + cornerSvg_('br', 'sakura') + '<div class="stamp" style="background:#c9457c">旬</div>';
+    return cornerSvg_('tl', 'sakura') + cornerSvg_('br', 'sakura') + stamp('旬', 'sk');
   }
   if (deco === 'wamodern') {
     return '<div class="inner-frame"></div>';
@@ -91,7 +117,7 @@ function shelfPriceHtml_(価格) {
 
 function renderProduct_(c) {
   var f = c.fields;
-  var badge = c.catchAngle
+  var badge = (c.catchAngle && adjustOf_(c).badge !== false)
     ? '<span class="zip">' + escapeHtml(c.catchAngle) + '</span>'
     : '';
   var q = stripQuotes_(f.生産者のひとこと);
@@ -100,7 +126,7 @@ function renderProduct_(c) {
     q ? '<span class="pquote">「' + escapeHtml(q) + '」</span>' : '',
   ].filter(Boolean).join('');
   return [
-    '<div class="pop shelf ' + escapeHtml(c.variant) + ' ' + themeClass_(c) + '"' + fsStyle_(c) + '>',
+    '<div class="pop shelf ' + escapeHtml(c.variant) + ' ' + themeClass_(c) + accentClass_(c) + '"' + fsStyle_(c) + '>',
     '  <div class="catch">' + badge + nl2brHtml_(c.catch) + '</div>',
     '  <div class="name-wrap"><div class="name' + (String(f.商品名 || '').length >= 8 ? ' long' : '') + '">' + escapeHtml(f.商品名) + '</div>',
     f.補足 ? '    <div class="reading">' + escapeHtml(f.補足) + '</div>' : '',
@@ -208,8 +234,8 @@ function renderExplain_(c) {
   }
 
   return [
-    '<div class="pop a4 ' + escapeHtml(c.variant) + ' ' + themeClass_(c) + ' deco-' + deco + '"' + fsStyle_(c) + '>',
-    decoHtml_(deco),
+    '<div class="pop a4 ' + escapeHtml(c.variant) + ' ' + themeClass_(c) + ' deco-' + deco + accentClass_(c) + stampClass_(c) + '"' + fsStyle_(c) + '>',
+    decoHtml_(deco, adjustOf_(c)),
     '<div class="a4-body">',
     header.filter(Boolean).join('\n'),
     '<div class="a4-mid">' + mid.filter(Boolean).join('\n') + '</div>',

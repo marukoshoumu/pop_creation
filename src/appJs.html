@@ -1,5 +1,10 @@
 <script>
-var state = { popType: 'product', fontTheme: 'fude', decoTheme: 'plain', fontScale: 1, inputText: '', audio: null, fields: null, missing: [], catches: [], selectedIndex: 0, content: null, fromReprint: false };
+function initialState_() {
+  return { popType: 'product', fontTheme: 'fude', decoTheme: 'plain', fontScale: 1,
+    accent: '', stampPos: 'tr', badge: true, producerFileId: '',
+    inputText: '', audio: null, fields: null, missing: [], catches: [], selectedIndex: 0, content: null, fromReprint: false };
+}
+var state = initialState_();
 
 function runServer(fnName) {
   var args = Array.prototype.slice.call(arguments, 1);
@@ -101,6 +106,10 @@ function editPop(p) {
   state.fontTheme = content.fontTheme || 'fude';
   state.decoTheme = content.decoTheme || 'plain';
   state.fontScale = content.fontScale || 1;
+  state.accent = content.accent || '';
+  var adj = content.adjust || {};
+  state.stampPos = adj.stamp === 'tl' || adj.stamp === 'off' ? adj.stamp : 'tr';
+  state.badge = adj.badge !== false;
   state.fields = content.fields;
   state.missing = [];
   state.fromReprint = false;  // 編集は通常フローに合流する
@@ -111,7 +120,7 @@ function editPop(p) {
 }
 
 document.getElementById('btn-new').addEventListener('click', function () {
-  state = { popType: 'product', fontTheme: 'fude', decoTheme: 'plain', fontScale: 1, inputText: '', audio: null, fields: null, missing: [], catches: [], selectedIndex: 0, content: null, fromReprint: false };
+  state = initialState_();
   saved_ = false;
   document.getElementById('input-text').value = '';
   document.getElementById('audio-name').textContent = '';
@@ -297,6 +306,8 @@ function contentFor_(i) {
     type: state.popType,
     variant: variants[i % variants.length],
     fontTheme: state.fontTheme, decoTheme: state.decoTheme, fontScale: state.fontScale,
+    accent: state.accent,
+    adjust: { stamp: state.stampPos, badge: state.badge },
     catch: c.キャッチ, catchAngle: c.切り口,
     fields: state.fields,
   };
@@ -340,7 +351,20 @@ function syncThemeButtons_() {
   document.querySelectorAll('.fs-btn').forEach(function (b) {
     b.classList.toggle('on', Number(b.getAttribute('data-fs')) === state.fontScale);
   });
+  document.querySelectorAll('.ac-btn').forEach(function (b) {
+    b.classList.toggle('on', b.getAttribute('data-ac') === state.accent);
+  });
+  document.querySelectorAll('.st-btn').forEach(function (b) {
+    b.classList.toggle('on', b.getAttribute('data-st') === state.stampPos);
+  });
+  document.querySelectorAll('.bd-btn').forEach(function (b) {
+    b.classList.toggle('on', (b.getAttribute('data-bd') === '1') === state.badge);
+  });
   document.getElementById('deco-row').hidden = (state.popType !== 'explain');
+  // スタンプ位置はスタンプ付き装飾（にぎやか/季節）のときだけ意味を持つ
+  document.getElementById('stamp-row').hidden =
+    !(state.popType === 'explain' && (state.decoTheme === 'lively' || state.decoTheme === 'season'));
+  document.getElementById('badge-row').hidden = (state.popType !== 'product');
 }
 
 /* テーマ変更後に3案を再描画し、選択中の案・キャッチ編集を維持 */
@@ -364,6 +388,15 @@ document.querySelectorAll('.dc-btn').forEach(function (b) {
 });
 document.querySelectorAll('.fs-btn').forEach(function (b) {
   b.addEventListener('click', function () { state.fontScale = Number(b.getAttribute('data-fs')); rerenderKeepSelection_(); });
+});
+document.querySelectorAll('.ac-btn').forEach(function (b) {
+  b.addEventListener('click', function () { state.accent = b.getAttribute('data-ac'); rerenderKeepSelection_(); });
+});
+document.querySelectorAll('.st-btn').forEach(function (b) {
+  b.addEventListener('click', function () { state.stampPos = b.getAttribute('data-st'); rerenderKeepSelection_(); });
+});
+document.querySelectorAll('.bd-btn').forEach(function (b) {
+  b.addEventListener('click', function () { state.badge = b.getAttribute('data-bd') === '1'; rerenderKeepSelection_(); });
 });
 /* キャッチ編集をライブ反映（改行含む）: 入力のたびに選択案のプレビューを更新 */
 document.getElementById('catch-edit').addEventListener('input', function () {
