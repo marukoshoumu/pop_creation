@@ -44,32 +44,71 @@ document.getElementById('error-close').addEventListener('click', function () {
   document.getElementById('error-bar').hidden = true;
 });
 
+/* ===== 生産者マスタ（顔イラスト） ===== */
+var producers_ = null;    // マスタ一覧のキャッシュ（登録時に無効化）
+var portraitCache_ = {};  // イラストFileID -> データURI
+
+function fetchPortrait_(fileId) {
+  if (!fileId) return Promise.resolve(null);
+  if (portraitCache_[fileId]) return Promise.resolve(portraitCache_[fileId]);
+  return runServer('api_getPortrait', fileId).then(function (r) {
+    portraitCache_[fileId] = 'data:' + r.mimeType + ';base64,' + r.base64;
+    return portraitCache_[fileId];
+  }).catch(function () { return null; });  // 取得失敗はイラスト無しで続行
+}
+
+/** 内容JSONには fileId のみ保存。描画直前にキャッシュ済みイラストを fields に注入する */
+function withPortrait_(content) {
+  var id = content && content.producerFileId;
+  if (!id || !portraitCache_[id]) return content;
+  var c = Object.assign({}, content);
+  c.fields = Object.assign({}, content.fields, { 生産者イラスト: portraitCache_[id] });
+  return c;
+}
+
 /* ===== 画面1: ホーム ===== */
 function loadHome() {
   showScreen('home');
   var grid = document.getElementById('history-grid');
   runServer('api_listPops').then(function (list) {
     if (!list.length) { grid.innerHTML = '<p class="muted">まだPOPがありません。「新しいPOPをつくる」から始めましょう。</p>'; return; }
-    grid.innerHTML = list.map(function (p, i) {
-      // サムネは画像化せず、保存済み内容JSONから実物ミニプレビューを描く（常に鮮明・正確）
-      var preview = '<div class="muted" style="padding:20px;text-align:center">' + escapeHtml(p.商品名) + '</div>';
+    var draw = function () {
+      grid.innerHTML = list.map(function (p, i) {
+        // サムネは画像化せず、保存済み内容JSONから実物ミニプレビューを描く（常に鮮明・正確）
+        var preview = '<div class="muted" style="padding:20px;text-align:center">' + escapeHtml(p.商品名) + '</div>';
+        try {
+          var c = JSON.parse(p.内容JSON);
+          if (c && (c.type === 'product' || c.type === 'explain') && c.fields) {
+            preview = '<div class="pick-preview">' + renderPop(withPortrait_(c)) + '</div>';
+          }
+        } catch (e) { /* 壊れた行はテキスト表示にフォールバック */ }
+        return '<div class="history-card">' + preview +
+          '<div class="meta"><b>' + escapeHtml(p.商品名) + '</b><br>' + escapeHtml(p.種別) + '・' + escapeHtml(p.サイズ) + ' ／ ' + escapeHtml(p.作成日時) + '</div>' +
+          '<button class="btn mini" data-reprint="' + i + '">🖨 再印刷</button> ' +
+          '<button class="btn mini ghost" data-edit="' + i + '">編集</button></div>';
+      }).join('');
+      grid.querySelectorAll('[data-reprint]').forEach(function (b) {
+        b.addEventListener('click', function () { reprintPop(list[Number(b.getAttribute('data-reprint'))]); });
+      });
+      grid.querySelectorAll('[data-edit]').forEach(function (b) {
+        b.addEventListener('click', function () { editPop(list[Number(b.getAttribute('data-edit'))]); });
+      });
+    };
+    draw();
+    // 未取得の似顔絵があれば取得し、一度だけ描き直す
+    var need = {};
+    list.forEach(function (p) {
       try {
         var c = JSON.parse(p.内容JSON);
-        if (c && (c.type === 'product' || c.type === 'explain') && c.fields) {
-          preview = '<div class="pick-preview">' + renderPop(c) + '</div>';
-        }
-      } catch (e) { /* 壊れた行はテキスト表示にフォールバック */ }
-      return '<div class="history-card">' + preview +
-        '<div class="meta"><b>' + escapeHtml(p.商品名) + '</b><br>' + escapeHtml(p.種別) + '・' + escapeHtml(p.サイズ) + ' ／ ' + escapeHtml(p.作成日時) + '</div>' +
-        '<button class="btn mini" data-reprint="' + i + '">🖨 再印刷</button> ' +
-        '<button class="btn mini ghost" data-edit="' + i + '">編集</button></div>';
-    }).join('');
-    grid.querySelectorAll('[data-reprint]').forEach(function (b) {
-      b.addEventListener('click', function () { reprintPop(list[Number(b.getAttribute('data-reprint'))]); });
+        if (c && c.producerFileId && !portraitCache_[c.producerFileId]) need[c.producerFileId] = 1;
+      } catch (e) { /* 壊れた行は無視 */ }
     });
-    grid.querySelectorAll('[data-edit]').forEach(function (b) {
-      b.addEventListener('click', function () { editPop(list[Number(b.getAttribute('data-edit'))]); });
-    });
+    var missing = Object.keys(need);
+    if (missing.length) {
+      Promise.all(missing.map(fetchPortrait_)).then(function (r) {
+        if (r.some(Boolean)) draw();
+      });
+    }
   }).catch(function (e) { grid.innerHTML = '<p class="muted">履歴を読み込めませんでした: ' + escapeHtml(e.message) + '</p>'; });
 }
 
@@ -110,6 +149,7 @@ function editPop(p) {
   var adj = content.adjust || {};
   state.stampPos = adj.stamp === 'tl' || adj.stamp === 'off' ? adj.stamp : 'tr';
   state.badge = adj.badge !== false;
+  state.producerFileId = content.producerFileId || '';
   state.fields = content.fields;
   state.missing = [];
   state.fromReprint = false;  // 編集は通常フローに合流する
@@ -237,7 +277,125 @@ function renderConfirm() {
   document.getElementById('confirm-form').innerHTML = html;
   document.getElementById('missing-note').textContent =
     state.missing.length ? '（聞き取れなかった項目: ' + state.missing.join('・') + '）' : '';
+  syncPortraitUI_();
 }
+
+/* ===== 確認画面: 顔イラスト選択・登録 ===== */
+function syncPortraitUI_() {
+  var field = document.getElementById('portrait-field');
+  loadProducers_().then(function (list) {
+    field.hidden = false;
+    var sel = document.getElementById('producer-select');
+    sel.innerHTML = '<option value="">なし</option>' + list.map(function (p) {
+      return '<option value="' + escapeHtml(p.イラストFileID) + '">' + escapeHtml(p.名前) + '</option>';
+    }).join('');
+    if (!state.producerFileId) {
+      // 生産者名がマスタと一致したら自動で候補を選ぶ
+      var nameEl = document.querySelector('[data-field="生産者"]');
+      var name = nameEl ? nameEl.value.trim() : '';
+      var hit = list.filter(function (p) { return p.名前 === name; })[0];
+      if (hit) state.producerFileId = hit.イラストFileID;
+    }
+    sel.value = state.producerFileId || '';
+    if (sel.value !== (state.producerFileId || '')) { state.producerFileId = ''; sel.value = ''; }  // マスタから消えたID
+    updatePortraitThumb_();
+  }).catch(function () { field.hidden = true; });  // マスタ取得失敗時は行ごと隠して続行（AI/保存疎結合）
+}
+
+function loadProducers_() {
+  if (producers_) return Promise.resolve(producers_);
+  return runServer('api_listProducers').then(function (list) { producers_ = list; return list; });
+}
+
+function updatePortraitThumb_() {
+  var img = document.getElementById('portrait-preview');
+  if (!state.producerFileId) { img.hidden = true; return; }
+  fetchPortrait_(state.producerFileId).then(function (uri) {
+    if (uri && state.producerFileId) { img.src = uri; img.hidden = false; } else { img.hidden = true; }
+  });
+}
+
+document.getElementById('producer-select').addEventListener('change', function () {
+  state.producerFileId = this.value;
+  updatePortraitThumb_();
+});
+
+/* 登録モーダル */
+var pmTouch_ = 'suisai';
+var pmPhoto_ = null;   // 縮小済み写真 {mimeType, base64}（送信のみ・保存しない）
+var pmResult_ = null;  // 生成イラスト {mimeType, base64}
+
+document.getElementById('btn-producer-new').addEventListener('click', function () {
+  pmPhoto_ = null; pmResult_ = null;
+  var nameEl = document.querySelector('[data-field="生産者"]');
+  document.getElementById('pm-name').value = nameEl ? nameEl.value.trim() : '';
+  document.getElementById('pm-photo').value = '';
+  document.getElementById('pm-preview').hidden = true;
+  document.getElementById('pm-save').disabled = true;
+  document.getElementById('producer-modal').hidden = false;
+});
+document.getElementById('pm-cancel').addEventListener('click', function () {
+  document.getElementById('producer-modal').hidden = true;
+});
+document.querySelectorAll('.pm-touch').forEach(function (b) {
+  b.addEventListener('click', function () {
+    pmTouch_ = b.getAttribute('data-touch');
+    document.querySelectorAll('.pm-touch').forEach(function (x) { x.classList.toggle('on', x === b); });
+  });
+});
+
+/* 写真は最大1024pxに縮小してから送る（通信量とAPI入力を抑える） */
+document.getElementById('pm-photo').addEventListener('change', function () {
+  var f = this.files[0];
+  pmPhoto_ = null;
+  if (!f) return;
+  var img = new Image();
+  var url = URL.createObjectURL(f);
+  img.onload = function () {
+    URL.revokeObjectURL(url);
+    var scale = Math.min(1, 1024 / Math.max(img.width, img.height));
+    var cv = document.createElement('canvas');
+    cv.width = Math.max(1, Math.round(img.width * scale));
+    cv.height = Math.max(1, Math.round(img.height * scale));
+    cv.getContext('2d').drawImage(img, 0, 0, cv.width, cv.height);
+    pmPhoto_ = { mimeType: 'image/jpeg', base64: cv.toDataURL('image/jpeg', 0.9).split(',')[1] };
+  };
+  img.onerror = function () { URL.revokeObjectURL(url); showError('この画像を読み込めませんでした。別の写真をお試しください。'); };
+  img.src = url;
+});
+
+document.getElementById('pm-generate').addEventListener('click', function () {
+  if (!pmPhoto_) { showError('顔写真を選んでください。'); return; }
+  showLoading('似顔絵を描いています…（30秒ほどかかることがあります）');
+  runServer('api_generatePortrait', { photo: pmPhoto_, touch: pmTouch_ })
+    .then(function (r) {
+      hideLoading();
+      pmResult_ = r;
+      var img = document.getElementById('pm-preview');
+      img.src = 'data:' + r.mimeType + ';base64,' + r.base64;
+      img.hidden = false;
+      document.getElementById('pm-save').disabled = false;
+    })
+    .catch(function (e) { hideLoading(); showError(e.message); });
+});
+
+document.getElementById('pm-save').addEventListener('click', function () {
+  var name = document.getElementById('pm-name').value.trim();
+  if (!name) { showError('生産者の名前を入れてください。'); return; }
+  if (!pmResult_) return;
+  showLoading('保存しています…');
+  var result = pmResult_;
+  runServer('api_saveProducer', { 名前: name, タッチ: pmTouch_, mimeType: result.mimeType, base64: result.base64 })
+    .then(function (r) {
+      hideLoading();
+      producers_ = null;  // マスタを次回再取得
+      portraitCache_[r.イラストFileID] = 'data:' + result.mimeType + ';base64,' + result.base64;
+      state.producerFileId = r.イラストFileID;
+      document.getElementById('producer-modal').hidden = true;
+      syncPortraitUI_();
+    })
+    .catch(function (e) { hideLoading(); showError(e.message); });
+});
 
 function collectConfirm_() {
   var get = function (k) {
@@ -308,19 +466,24 @@ function contentFor_(i) {
     fontTheme: state.fontTheme, decoTheme: state.decoTheme, fontScale: state.fontScale,
     accent: state.accent,
     adjust: { stamp: state.stampPos, badge: state.badge },
+    producerFileId: state.producerFileId || '',
     catch: c.キャッチ, catchAngle: c.切り口,
     fields: state.fields,
   };
 }
 
 function renderVariants() {
+  // 似顔絵が未取得なら取得後に一度だけ描き直す
+  if (state.producerFileId && !portraitCache_[state.producerFileId]) {
+    fetchPortrait_(state.producerFileId).then(function (uri) { if (uri) rerenderKeepSelection_(); });
+  }
   var picks = document.getElementById('variant-picks');
   var n = Math.min(3, state.catches.length || 1);
   var html = '';
   for (var i = 0; i < n; i++) {
     var content = contentFor_(i);
     html += '<div class="pick' + (i === 0 ? ' on' : '') + '" data-pick="' + i + '">' +
-      '<div class="pick-preview">' + renderPop(content) + '</div>' +
+      '<div class="pick-preview">' + renderPop(withPortrait_(content)) + '</div>' +
       '<div class="radio">' + (i === 0 ? '●' : '○') + ' 案' + (i + 1) + ' ' + escapeHtml(content.catchAngle) + '</div></div>';
   }
   picks.innerHTML = html;
@@ -404,7 +567,7 @@ document.getElementById('catch-edit').addEventListener('input', function () {
   state.catches[state.selectedIndex].キャッチ = this.value;
   var picks = document.getElementById('variant-picks');
   var cell = picks.querySelectorAll('.pick-preview')[state.selectedIndex];
-  if (cell) cell.innerHTML = renderPop(contentFor_(state.selectedIndex));
+  if (cell) cell.innerHTML = renderPop(withPortrait_(contentFor_(state.selectedIndex)));
 });
 
 /* 別の言い回しで再生成（直前の3案を avoid として渡し、似た案を避ける） */
@@ -436,7 +599,16 @@ document.getElementById('variants-back').addEventListener('click', function () {
 
 /* ===== 画面5: 印刷・保存 ===== */
 function renderPrint() {
-  document.getElementById('print-preview').innerHTML = renderPop(state.content);
+  var c = state.content;
+  document.getElementById('print-preview').innerHTML = renderPop(withPortrait_(c));
+  // 再印刷など未取得の似顔絵は、取得後に一度だけ描き直す
+  if (c.producerFileId && !portraitCache_[c.producerFileId]) {
+    fetchPortrait_(c.producerFileId).then(function (uri) {
+      if (uri && state.content === c) {
+        document.getElementById('print-preview').innerHTML = renderPop(withPortrait_(c));
+      }
+    });
+  }
 }
 
 function popRecord_() {
@@ -453,7 +625,7 @@ function capturePng_() {
   // spec: html2canvas 未ロード(CDN障害等)でも同期throwさせず、PNG無しで保存を継続する
   if (typeof html2canvas !== 'function') return Promise.resolve(null);
   var area = document.getElementById('print-area');
-  area.innerHTML = renderPop(state.content);
+  area.innerHTML = renderPop(withPortrait_(state.content));
   return Promise.resolve().then(function () {
     return html2canvas(area.firstElementChild, { scale: 1.5 });
   })
@@ -496,7 +668,7 @@ function savePopWithPng_() {
 document.getElementById('btn-print').addEventListener('click', function () {
   if (saving_) return;
   var area = document.getElementById('print-area');
-  area.innerHTML = renderPop(state.content);
+  area.innerHTML = renderPop(withPortrait_(state.content));
   window.print();
   area.innerHTML = '';
   savePopWithPng_();   // 印刷ダイアログ後に保存（spec: 保存失敗でも印刷は成立）

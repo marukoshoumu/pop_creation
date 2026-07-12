@@ -59,3 +59,38 @@ function api_listPops() {
 function api_getPop(id) {
   return getPop(id);
 }
+
+/* ===== 生産者マスタ（顔イラスト） ===== */
+
+function api_listProducers() {
+  return listProducers();
+}
+
+var PORTRAIT_PHOTO_TYPES_ = { 'image/jpeg': 1, 'image/png': 1, 'image/webp': 1 };
+var PORTRAIT_PHOTO_MAX_B64_ = 7 * 1024 * 1024;  // base64 で約7MB（実体約5MB）
+
+/** 写真→似顔絵のプレビュー生成。写真は保存せず、イラストの base64 を返すだけ */
+function api_generatePortrait(req) {
+  var photo = req && req.photo;
+  if (!photo || !photo.base64 || !PORTRAIT_PHOTO_TYPES_[photo.mimeType]) {
+    throw new Error('顔写真（JPEG/PNG/WebP）を選んでください。');
+  }
+  if (String(photo.base64).length > PORTRAIT_PHOTO_MAX_B64_) {
+    throw new Error('写真が大きすぎます。別の写真をお試しください。');
+  }
+  return generatePortrait(photo, req.touch);
+}
+
+/** プレビュー済みイラストを Drive+マスタに保存 */
+function api_saveProducer(req) {
+  var name = req && String(req.名前 || '').trim();
+  if (!name) throw new Error('生産者の名前を入れてください。');
+  if (!req.base64) throw new Error('先にイラストを作ってください。');
+  return saveProducer({ 名前: name, タッチ: req.タッチ, mimeType: req.mimeType, base64: req.base64 });
+}
+
+/** POP描画用にイラストを base64 で返す */
+function api_getPortrait(fileId) {
+  if (!fileId) throw new Error('イラストが指定されていません。');
+  return getPortraitData(String(fileId));
+}

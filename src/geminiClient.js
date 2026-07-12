@@ -80,6 +80,61 @@ function generateCatches(fields, popType, avoid) {
   return list;
 }
 
+/* ===== 顔写真→似顔絵イラスト（生産者マスタ登録時のみ呼ばれる） ===== */
+
+/**
+ * 顔写真から似顔絵イラストを1枚生成する。写真はAPIに送るだけで保存しない。
+ * 戻り値: { mimeType, base64 }（PNG想定）
+ */
+function generatePortrait(photo, touch) {
+  var c = getConfig_();
+  var url = 'https://generativelanguage.googleapis.com/v1beta/models/' + c.imageModel +
+    ':generateContent?key=' + c.apiKey;
+  var payload = {
+    contents: [{
+      parts: [
+        { inlineData: { mimeType: photo.mimeType, data: photo.base64 } },
+        { text: buildPortraitPrompt(touch) },
+      ],
+    }],
+  };
+  var options = {
+    method: 'post',
+    contentType: 'application/json',
+    payload: JSON.stringify(payload),
+    muteHttpExceptions: true,
+  };
+  var lastErr;
+  for (var attempt = 0; attempt < 2; attempt++) {  // 自動リトライ 1 回
+    try {
+      var res = UrlFetchApp.fetch(url, options);
+      var code = res.getResponseCode();
+      if (code === 429) {
+        var quotaErr = new Error('AIの利用枠が一時的に上限です。時間をおいてお試しください。');
+        quotaErr.noRetry = true;
+        throw quotaErr;
+      }
+      if (code !== 200) {
+        Logger.log('Gemini image error ' + code + ': ' + res.getContentText());
+        throw new Error('イラスト生成に失敗しました（コード ' + code + '）。もう一度お試しください。');
+      }
+      var json = JSON.parse(res.getContentText());
+      var parts = (((json.candidates || [])[0] || {}).content || {}).parts || [];
+      for (var i = 0; i < parts.length; i++) {
+        var d = parts[i].inlineData;
+        if (d && d.data && String(d.mimeType || '').indexOf('image/') === 0) {
+          return { mimeType: d.mimeType, base64: d.data };
+        }
+      }
+      throw new Error('AIがイラストを返しませんでした。別の写真でお試しください。');
+    } catch (e) {
+      lastErr = e;
+      if (e.noRetry) throw e;
+    }
+  }
+  throw lastErr;
+}
+
 /** GAS エディタから手動実行するスモークテスト */
 function smokeGemini() {
   var r = extractContent({
@@ -87,4 +142,13 @@ function smokeGemini() {
   }, 'product');
   Logger.log(JSON.stringify(r, null, 2));
   Logger.log(JSON.stringify(generateCatches(r.fields, 'product'), null, 2));
+}
+
+/** 似顔絵生成のスモークテスト: Drive に写真を置き、そのファイルIDを入れて手動実行 */
+function smokePortrait() {
+  var photoFileId = 'ここに写真のDriveファイルIDを入れて実行';
+  var blob = DriveApp.getFileById(photoFileId).getBlob();
+  var r = generatePortrait(
+    { mimeType: blob.getContentType(), base64: Utilities.base64Encode(blob.getBytes()) }, 'suisai');
+  Logger.log('portrait: ' + r.mimeType + ' / 約' + Math.round(r.base64.length * 3 / 4 / 1024) + 'KB');
 }

@@ -54,6 +54,15 @@
     <div class="steps"><span class="stepchip">1 入力</span><span class="stepchip on">2 確認</span><span class="stepchip">3 案をえらぶ</span><span class="stepchip">4 印刷</span></div>
     <div class="ai-note">🤖 AIがインタビューから内容を抜き出しました。<b>まちがいがないか確認して、直せます。</b><span id="missing-note"></span></div>
     <div id="confirm-form"></div>
+    <div class="field" id="portrait-field" hidden>
+      <label>顔イラスト（生産者マスタ）</label>
+      <div class="portrait-row">
+        <select id="producer-select" class="input"><option value="">なし</option></select>
+        <button type="button" class="btn mini ghost" id="btn-producer-new">＋ 写真から新しく登録</button>
+      </div>
+      <img id="portrait-preview" class="portrait-thumb" alt="" hidden>
+      <div class="hint" style="color:#8a8375">登録済みの生産者を選ぶと、POPに似顔絵が入ります。</div>
+    </div>
     <div class="btn-row">
       <button class="btn ghost" id="confirm-back">← もどる</button>
       <button class="btn big" id="btn-catches">この内容で3案つくる →</button>
@@ -131,6 +140,29 @@
     <div class="print-note" id="save-status">印刷すると自動で履歴に保存されます。</div>
   </section>
 </main>
+
+<div id="producer-modal" class="modal" hidden>
+  <div class="modal-box">
+    <h3>🎨 生産者を登録して似顔絵を作る</h3>
+    <div class="field"><label>名前（例: 佐藤さん）</label><input id="pm-name" class="input"></div>
+    <div class="field"><label>顔写真（JPEG/PNG。正面の写真がきれいに仕上がります）</label>
+      <input type="file" id="pm-photo" accept="image/jpeg,image/png,image/webp"></div>
+    <div class="field"><label>タッチ</label>
+      <div class="ft-btns">
+        <button type="button" class="pm-touch on" data-touch="suisai">水彩</button>
+        <button type="button" class="pm-touch" data-touch="enpitsu">色鉛筆</button>
+        <button type="button" class="pm-touch" data-touch="senga">やわらか線画</button>
+      </div>
+    </div>
+    <img id="pm-preview" class="portrait-big" alt="" hidden>
+    <div class="hint2">写真は似顔絵を作るために Google の AI に送信されます（写真自体は保存されません。保存されるのはイラストだけです）。ご本人の了解を得てお使いください。</div>
+    <div class="btn-row">
+      <button type="button" class="btn ghost" id="pm-cancel">閉じる</button>
+      <button type="button" class="btn ghost" id="pm-generate">🎨 イラストを作る</button>
+      <button type="button" class="btn big" id="pm-save" disabled>この似顔絵で保存</button>
+    </div>
+  </div>
+</div>
 
 <div id="print-area"></div>
 

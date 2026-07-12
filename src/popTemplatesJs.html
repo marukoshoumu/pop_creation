@@ -101,13 +101,28 @@ function stripQuotes_(s) {
   return String(s || '').replace(/^\s*「/, '').replace(/」\s*$/, '').trim();
 }
 
-/** 説明型用: 手描き吹き出し（生産者のひとこと）。無ければ空 */
+/** 生産者の似顔絵。データURI画像のみ許可（外部URLやスクリプトを弾く） */
+function portraitImg_(f, cls) {
+  var src = String(f.生産者イラスト || '');
+  if (src.indexOf('data:image/') !== 0) return '';
+  return '<span class="pface' + (cls ? ' ' + cls : '') + '"><img src="' + escapeHtml(src) + '" alt=""></span>';
+}
+
+/**
+ * 説明型用: 手描き吹き出し（生産者のひとこと）＋似顔絵。
+ * ひとこと無しでも似顔絵があれば名札付きで出す。両方無ければ空
+ */
 function quoteHtml_(f) {
   var q = stripQuotes_(f.生産者のひとこと);
-  if (!q) return '';
+  var face = portraitImg_(f, 'big');
   var who = f.生産者 ? escapeHtml(f.生産者) : '生産者';
-  return '<div class="quote"><div class="qtext">「' + escapeHtml(q) + '」</div>' +
+  if (!q) {
+    if (!face) return '';
+    return '<div class="quote-row noq">' + face + '<span class="pname">' + who + '</span></div>';
+  }
+  var quote = '<div class="quote"><div class="qtext">「' + escapeHtml(q) + '」</div>' +
     '<div class="qwho">— ' + who + 'より</div></div>';
+  return face ? '<div class="quote-row">' + face + quote + '</div>' : quote;
 }
 
 /* ===== 商品型（棚札） ===== */
@@ -124,6 +139,7 @@ function renderProduct_(c) {
     : '';
   var q = stripQuotes_(f.生産者のひとこと);
   var footL = [
+    portraitImg_(f),
     f.生産者 ? '<span class="ptag">' + escapeHtml(f.生産者) + '</span>' : '',
     q ? '<span class="pquote">「' + escapeHtml(q) + '」</span>' : '',
   ].filter(Boolean).join('');

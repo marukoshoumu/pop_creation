@@ -77,6 +77,63 @@ function saveThumbnail(popId, base64Png) {
   return folder.createFile(blob).getId();
 }
 
+/* ===== 生産者マスタ（顔イラストの使い回し） ===== */
+var PRODUCERS_SHEET = '生産者マスタ';
+var PRODUCERS_HEADERS = ['ID', '名前', 'イラストFileID', 'タッチ', '作成日時'];
+
+function ensureProducersSheet_() {
+  var ss = getSpreadsheet_();
+  var s = ss.getSheetByName(PRODUCERS_SHEET);
+  if (!s) {
+    s = ss.insertSheet(PRODUCERS_SHEET);
+    s.getRange(1, 1, 1, PRODUCERS_HEADERS.length).setValues([PRODUCERS_HEADERS]);
+  }
+  return s;
+}
+
+function listProducers() {
+  var s = ensureProducersSheet_();
+  var last = s.getLastRow();
+  if (last <= 1) return [];
+  return s.getRange(2, 1, last - 1, PRODUCERS_HEADERS.length).getValues()
+    .map(function (r) { return { ID: String(r[0]), 名前: String(r[1]), イラストFileID: String(r[2]), タッチ: String(r[3]) }; })
+    .filter(function (p) { return p.名前 && p.イラストFileID; });
+}
+
+/** イラストPNGを Drive に保存してマスタ行を追加。写真そのものは保存しない */
+function saveProducer(rec) {
+  var folder = DriveApp.getFolderById(getConfig_().driveFolderId);
+  var bytes = Utilities.base64Decode(rec.base64);
+  var blob = Utilities.newBlob(bytes, rec.mimeType || 'image/png', 'producer-' + rec.名前 + '.png');
+  var fileId = folder.createFile(blob).getId();
+  var lock = LockService.getScriptLock();
+  lock.waitLock(10000);
+  try {
+    var s = ensureProducersSheet_();
+    var id = 'PRD-' + Utilities.formatDate(new Date(), 'Asia/Tokyo', 'yyyyMMddHHmmss');
+    s.appendRow([id, rec.名前, fileId, rec.タッチ || 'suisai', new Date()]);
+    return { ID: id, イラストFileID: fileId };
+  } catch (e) {
+    try { DriveApp.getFileById(fileId).setTrashed(true); } catch (e2) { Logger.log('孤児イラスト削除失敗: ' + e2.message); }
+    throw e;
+  } finally {
+    lock.releaseLock();
+  }
+}
+
+/** イラストを base64 で返す（POP描画用）。アプリのDriveフォルダ内のファイルのみ許可 */
+function getPortraitData(fileId) {
+  var file = DriveApp.getFileById(fileId);
+  var inFolder = false;
+  var parents = file.getParents();
+  while (parents.hasNext()) {
+    if (parents.next().getId() === getConfig_().driveFolderId) { inFolder = true; break; }
+  }
+  if (!inFolder) throw new Error('このイラストは読み込めません。');
+  var blob = file.getBlob();
+  return { mimeType: blob.getContentType(), base64: Utilities.base64Encode(blob.getBytes()) };
+}
+
 function getSettings() {
   var ss = getSpreadsheet_();
   var s = ss.getSheetByName(SETTINGS_SHEET);

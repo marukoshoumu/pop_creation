@@ -57,6 +57,16 @@ test('buildExtractPrompt: 話し言葉・非カタログ文体の指示を含む
   assert.ok(e.includes('話し言葉') && e.includes('カタログ'), '説明型の文体指示がない');
 });
 
+test('buildPortraitPrompt: 文字を描かない制約とタッチ切替（不正は水彩）', () => {
+  const s = p.buildPortraitPrompt('suisai');
+  assert.ok(s.includes('文字') && s.includes('描かない'), '文字禁止の指示がない');
+  assert.ok(s.includes('水彩'), '水彩タッチがない');
+  assert.ok(s.includes('バストアップ') && s.includes('白一色'), '構図指定がない');
+  assert.ok(p.buildPortraitPrompt('enpitsu').includes('色鉛筆'));
+  assert.ok(p.buildPortraitPrompt('senga').includes('線画'));
+  assert.ok(p.buildPortraitPrompt('xxx').includes('水彩'), '不正タッチが水彩にフォールバックしない');
+});
+
 test('buildGeminiRequest: テキストのみ', () => {
   const r = p.buildGeminiRequest({ prompt: 'テスト', schema: p.CATCHES_SCHEMA });
   assert.strictEqual(r.contents[0].parts.length, 1);

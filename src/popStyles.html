@@ -183,6 +183,18 @@
   .pointlist { display: flex; flex-direction: column; gap: 4%; }
   .pointbox { border: 3px solid var(--ink); border-radius: 155px 12px 145px 12px/12px 145px 12px 155px; padding: 4.5% 6%; font-size: calc(5cqw * var(--fs,1)); font-weight: 700; text-align: center; }
 
+  /* 生産者の似顔絵（データURIのみ。丸枠・手貼り写真風の微傾斜） */
+  .pface { flex-shrink: 0; display: inline-flex; border-radius: 50%; overflow: hidden;
+    border: 2px solid var(--ink); background: #fff; transform: rotate(-2deg); }
+  .pface img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .shelf .pface { width: 8cqw; height: 8cqw; align-self: center; }
+  /* 説明型: 吹き出しの横に大きめの似顔絵 */
+  .quote-row { display: flex; align-items: flex-end; gap: 3%; margin-top: 2%; }
+  .quote-row .pface.big { width: 14cqw; height: 14cqw; border-width: 2.5px; }
+  .quote-row .quote { flex: 1; margin-top: 0; }
+  .quote-row.noq { align-items: center; justify-content: center; }
+  .quote-row .pname { font-size: calc(3.8cqw * var(--fs,1)); font-weight: 700; color: var(--ink); }
+
   /* 生産者のひとこと吹き出し（説明型） */
   .quote { position: relative; margin-top: 2%; padding: 3.2% 5% 2.6%; background: var(--paper-white);
     border: 2.5px solid var(--ink); border-radius: 145px 18px 155px 18px/18px 155px 18px 145px;

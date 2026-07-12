@@ -124,6 +124,25 @@ function buildCatchesPrompt(fields, popType, avoid) {
   return lines.join('\n');
 }
 
+/* ===== 生産者の似顔絵（顔写真→イラスト化） ===== */
+var PORTRAIT_TOUCHES = {
+  suisai: 'やわらかい水彩画',
+  enpitsu: 'あたたかみのある色鉛筆画',
+  senga: 'シンプルでやわらかい線画（ペンの線に淡い色を少しだけ）',
+};
+
+/** 顔写真→似顔絵イラストの生成プロンプト。touch 不正時は水彩にフォールバック */
+function buildPortraitPrompt(touch) {
+  var style = PORTRAIT_TOUCHES[touch] || PORTRAIT_TOUCHES.suisai;
+  return [
+    'この写真の人物の似顔絵イラストを描いてください。産直売り場の手作りPOPに載せます。',
+    'スタイル: ' + style + '。温かく親しみやすい雰囲気で、にこやかな表情に。',
+    '構図: バストアップ（胸から上）。正方形。背景は白一色。',
+    '本人の特徴（髪型・眼鏡・帽子・輪郭など）は保ってください。',
+    '重要: 文字・数字・ロゴ・署名・透かしは一切描かないでください。イラストのみ。',
+  ].join('\n');
+}
+
 function buildGeminiRequest(opts) {
   var parts = [];
   if (opts.audio) {
@@ -142,7 +161,7 @@ function buildGeminiRequest(opts) {
 
 if (typeof module !== 'undefined') {
   module.exports = {
-    buildExtractPrompt, buildCatchesPrompt, buildGeminiRequest,
+    buildExtractPrompt, buildCatchesPrompt, buildGeminiRequest, buildPortraitPrompt,
     EXTRACT_SCHEMA_PRODUCT, EXTRACT_SCHEMA_EXPLAIN, CATCHES_SCHEMA,
   };
 }
