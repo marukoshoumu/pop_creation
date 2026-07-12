@@ -144,10 +144,11 @@ main { max-width: 880px; margin: 0 auto; padding: 20px 16px 60px; }
 .center { text-align: center; margin: 18px 0; }
 h2.sec { font-size: 1rem; font-weight: 700; margin: 26px 0 4px; }
 .muted { color: #8a8375; font-size: .85rem; }
-.loading { position: fixed; inset: 0; background: rgba(255,255,255,.8); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 50; }
+/* z順: モーダル(70) < ローディング(80) < エラーバー(90)。生成中のくるくる・エラーをモーダルより手前に */
+.loading { position: fixed; inset: 0; background: rgba(255,255,255,.8); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 80; }
 .spinner { width: 42px; height: 42px; border: 4px solid #eee; border-top-color: var(--orange); border-radius: 50%; animation: spin 1s linear infinite; }
 @keyframes spin { to { transform: rotate(360deg); } }
-.error-bar { position: fixed; top: 0; left: 0; right: 0; background: #d33a2c; color: #fff; padding: 10px 16px; display: flex; gap: 10px; align-items: center; z-index: 60; }
+.error-bar { position: fixed; top: 0; left: 0; right: 0; background: #d33a2c; color: #fff; padding: 10px 16px; display: flex; gap: 10px; align-items: center; z-index: 90; }
 #print-area { position: absolute; left: -9999px; top: 0; }
 @media print { main, header, .loading, .error-bar { display: none !important; } }
 </style>
