@@ -52,7 +52,8 @@
   .shelf .reading { font-size: calc(2.9cqw * var(--fs,1)); color: #7a6f57; margin-top: 3px; }
   .shelf .price { grid-column: 2/3; grid-row: 2/3; align-self: center; justify-self: end; font-size: calc(11cqw * var(--fs,1)); line-height: .82; white-space: nowrap; text-align: right; }
   .shelf .price .yen { font-size: .36em; }
-  .shelf .price .tax { display: block; font-size: .26em; font-family: "Klee One", sans-serif; color: #8a7a55; margin-top: 2px; }
+  .shelf .price .tax { display: block; font-size: .26em; font-family: "Klee One", sans-serif; color: #8a7a55;
+    margin-top: 1.6cqw; line-height: 1; }  /* line-height .82 の数字に重ならないよう間隔を取る */
   .shelf .foot { grid-column: 1/3; grid-row: 3/4; align-self: end; display: flex; align-items: flex-end; gap: 14px; font-size: calc(3.4cqw * var(--fs,1)); color: #5a5030; }
   .shelf .foot b { color: var(--ink); }
   .shelf .foot .foot-l { flex: 1; min-width: 0; display: flex; align-items: center; gap: 10px; }
@@ -214,10 +215,10 @@
   /* 棚札の似顔絵はマイナスマージンで行の高さへの寄与を約7cqwに固定する。
      でないと大きめ似顔絵が下段を押し広げ、固定高グリッドがキャッチ行を圧縮して
      （overflow:hidden の行は最小高0まで縮む）手直しした2行目が消える */
-  .shelf .pface { width: 11cqw; height: 11cqw; align-self: center; margin: -2cqw 0; }
-  /* 似顔絵の大きさ（小/標準/大） */
-  .shelf.psize-s .pface { width: 8cqw; height: 8cqw; margin: -0.5cqw 0; }
-  .shelf.psize-l .pface { width: 14cqw; height: 14cqw; margin: -3.5cqw 0; }
+  .shelf .pface { width: 11cqw; height: 11cqw; align-self: center; margin: -3cqw 0 -1cqw; }
+  /* 似顔絵の大きさ（小/標準/大）。はみ出しは上方向へ寄せ、カード下端で切れないようにする */
+  .shelf.psize-s .pface { width: 8cqw; height: 8cqw; margin: -1cqw 0 0; }
+  .shelf.psize-l .pface { width: 14cqw; height: 14cqw; margin: -5.5cqw 0 -1.5cqw; }
   /* 似顔絵の位置: 右（名札より後ろ・容量の隣） */
   .shelf.ppos-r .foot-l .pface { order: 9; margin-left: auto; }
   /* 説明型: 吹き出しの横に大きめの似顔絵 */

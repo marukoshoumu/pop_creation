@@ -83,7 +83,7 @@ function frameClass_(content) {
 function shelfDecoHtml_(content) {
   var d = adjustOf_(content).sdeco;
   if (d === 'tape') return '<div class="deco tape l"></div><div class="deco tape r"></div>';
-  if (d === 'osusume') return '<div class="stamp sh">おすすめ</div>';
+  if (d === 'osusume') return '<div class="stamp sh">おす<br>すめ</div>';  // 折返し位置を固定（おすす/め は不自然）
   if (d === 'shun') return '<div class="stamp sh sk">旬</div>';
   return '';
 }
@@ -112,7 +112,7 @@ function decoHtml_(deco, adjust) {
     return '<div class="stamp' + (pos === 'tl' ? ' tl' : '') + (cls ? ' ' + cls : '') + '">' + label + '</div>';
   };
   if (deco === 'lively') {
-    return '<div class="deco tape l"></div><div class="deco tape r"></div>' + stamp('おすすめ');
+    return '<div class="deco tape l"></div><div class="deco tape r"></div>' + stamp('おす<br>すめ');
   }
   if (deco === 'season') {
     return cornerSvg_('tl', 'sakura') + cornerSvg_('br', 'sakura') + stamp('旬', 'sk');
