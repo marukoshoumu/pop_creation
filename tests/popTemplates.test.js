@@ -145,6 +145,13 @@ test('renderPop(product): 生産者のひとことが「」付きで foot に出
   assert.ok(h2.includes('「もう括られてる」') && !h2.includes('「「'), '「」が二重になっている');
 });
 
+test('renderPop(product): 長いひとこと（15文字以上）は long クラスで縮小表示', () => {
+  const short = t.renderPop({ ...productContent, fields: { ...productContent.fields, 生産者のひとこと: '香りが自慢だよ' } });
+  assert.ok(short.includes('class="pquote"'), '短文なのに long が付いた');
+  const long = t.renderPop({ ...productContent, fields: { ...productContent.fields, 生産者のひとこと: '今年は雪が多くて、そのぶん甘くなったよ' } });
+  assert.ok(long.includes('class="pquote long"'), '15文字以上なのに long が付かない');
+});
+
 test('renderPop(product): ひとこと無しなら pquote を出さない（名札は生産者名があれば出す）', () => {
   const html = t.renderPop(productContent);
   assert.ok(!html.includes('class="pquote"'));

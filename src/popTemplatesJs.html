@@ -171,7 +171,7 @@ function renderProduct_(c) {
   var footL = [
     portraitImg_(f),
     f.生産者 ? '<span class="ptag">' + escapeHtml(f.生産者) + '</span>' : '',
-    q ? '<span class="pquote">「' + escapeHtml(q) + '」</span>' : '',
+    q ? '<span class="pquote' + (q.length >= 15 ? ' long' : '') + '">「' + escapeHtml(q) + '」</span>' : '',
   ].filter(Boolean).join('');
   return [
     '<div class="pop shelf ' + escapeHtml(c.variant) + ' ' + themeClass_(c) + accentClass_(c) +
