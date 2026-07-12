@@ -100,7 +100,10 @@ function listProducers() {
     .filter(function (p) { return p.名前 && p.イラストFileID; });
 }
 
-/** イラストPNGを Drive に保存してマスタ行を追加。写真そのものは保存しない */
+/**
+ * イラストPNGを Drive に保存してマスタ行を追加。写真そのものは保存しない。
+ * 同名の生産者がすでにいる場合は行を上書きし、古いイラストはゴミ箱へ（作り直しを簡単に）
+ */
 function saveProducer(rec) {
   var folder = DriveApp.getFolderById(getConfig_().driveFolderId);
   var bytes = Utilities.base64Decode(rec.base64);
@@ -110,6 +113,20 @@ function saveProducer(rec) {
   lock.waitLock(10000);
   try {
     var s = ensureProducersSheet_();
+    var last = s.getLastRow();
+    if (last > 1) {
+      var rows = s.getRange(2, 1, last - 1, PRODUCERS_HEADERS.length).getValues();
+      for (var i = 0; i < rows.length; i++) {
+        if (String(rows[i][1]) === rec.名前) {  // 同名は上書き
+          var oldFileId = String(rows[i][2]);
+          s.getRange(i + 2, 3, 1, 3).setValues([[fileId, rec.タッチ || 'suisai', new Date()]]);
+          if (oldFileId) {
+            try { DriveApp.getFileById(oldFileId).setTrashed(true); } catch (e3) { Logger.log('旧イラスト削除失敗: ' + e3.message); }
+          }
+          return { ID: String(rows[i][0]), イラストFileID: fileId };
+        }
+      }
+    }
     var id = 'PRD-' + Utilities.formatDate(new Date(), 'Asia/Tokyo', 'yyyyMMddHHmmss');
     s.appendRow([id, rec.名前, fileId, rec.タッチ || 'suisai', new Date()]);
     return { ID: id, イラストFileID: fileId };

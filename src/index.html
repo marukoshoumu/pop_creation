@@ -120,6 +120,40 @@
         <button type="button" class="bd-btn" data-bd="0">なし</button>
       </div>
     </div>
+    <div class="fonttheme">
+      <span class="ft-label">枠線</span>
+      <div class="ft-btns">
+        <button type="button" class="fr-btn on" data-fr="">案のまま</button>
+        <button type="button" class="fr-btn" data-fr="hand">手描き</button>
+        <button type="button" class="fr-btn" data-fr="dash">点線</button>
+        <button type="button" class="fr-btn" data-fr="double">二重</button>
+        <button type="button" class="fr-btn" data-fr="none">なし</button>
+      </div>
+    </div>
+    <div class="fonttheme" id="sdeco-row" hidden>
+      <span class="ft-label">飾り（棚札）</span>
+      <div class="ft-btns">
+        <button type="button" class="sd-btn on" data-sd="">なし</button>
+        <button type="button" class="sd-btn" data-sd="tape">マステ</button>
+        <button type="button" class="sd-btn" data-sd="osusume">おすすめ印</button>
+        <button type="button" class="sd-btn" data-sd="shun">旬の印</button>
+      </div>
+    </div>
+    <div class="fonttheme" id="psize-row" hidden>
+      <span class="ft-label">似顔絵の大きさ</span>
+      <div class="ft-btns">
+        <button type="button" class="ps-btn" data-ps="s">小さめ</button>
+        <button type="button" class="ps-btn on" data-ps="m">標準</button>
+        <button type="button" class="ps-btn" data-ps="l">大きめ</button>
+      </div>
+    </div>
+    <div class="fonttheme" id="ppos-row" hidden>
+      <span class="ft-label">似顔絵の位置</span>
+      <div class="ft-btns">
+        <button type="button" class="pp-btn on" data-pp="l">左</button>
+        <button type="button" class="pp-btn" data-pp="r">右</button>
+      </div>
+    </div>
     <div class="pick-row" id="variant-picks"></div>
     <div class="field" style="margin-top:14px"><label>選んだ案のキャッチを手直しできます（改行したい所で Enter）</label>
       <textarea class="input" id="catch-edit" rows="2"></textarea>
@@ -155,7 +189,7 @@
       </div>
     </div>
     <img id="pm-preview" class="portrait-big" alt="" hidden>
-    <div class="hint2">写真は似顔絵を作るために Google の AI に送信されます（写真自体は保存されません。保存されるのはイラストだけです）。ご本人の了解を得てお使いください。</div>
+    <div class="hint2">写真は似顔絵を作るために Google の AI に送信されます（写真自体は保存されません。保存されるのはイラストだけです）。ご本人の了解を得てお使いください。<br>同じ名前で保存すると、前のイラストを置き換えて作り直せます。</div>
     <div class="btn-row">
       <button type="button" class="btn ghost" id="pm-cancel">閉じる</button>
       <button type="button" class="btn ghost" id="pm-generate">🎨 イラストを作る</button>

@@ -60,6 +60,35 @@ function stampClass_(content) {
   return '';
 }
 
+/** 似顔絵の大きさ(s/m/l 既定m)・位置(l/r 既定l) */
+function portraitAdjustClass_(content) {
+  var a = adjustOf_(content);
+  var cls = '';
+  if (a.psize === 's' || a.psize === 'l') cls += ' psize-' + a.psize;
+  if (a.ppos === 'r') cls += ' ppos-r';
+  return cls;
+}
+
+/** 枠線プリセット(hand/dash/double/none)。未指定は案の標準枠 */
+var FRAMES_ = { hand: 1, dash: 1, double: 1, none: 1 };
+function frameClass_(content) {
+  var f = adjustOf_(content).frame;
+  return FRAMES_[f] ? ' frame-' + f : '';
+}
+
+/** 棚札の飾り(tape/osusume/shun)。スタンプ時はルートに sdeco-stamp（キャッチの逃げ用） */
+function shelfDecoHtml_(content) {
+  var d = adjustOf_(content).sdeco;
+  if (d === 'tape') return '<div class="deco tape l"></div><div class="deco tape r"></div>';
+  if (d === 'osusume') return '<div class="stamp sh">おすすめ</div>';
+  if (d === 'shun') return '<div class="stamp sh sk">旬</div>';
+  return '';
+}
+function shelfDecoClass_(content) {
+  var d = adjustOf_(content).sdeco;
+  return (d === 'osusume' || d === 'shun') ? ' sdeco-stamp' : '';
+}
+
 /** 桜/角飾りの SVG（説明型 装飾用） */
 function cornerSvg_(pos, kind) {
   if (kind === 'sakura') {
@@ -142,7 +171,9 @@ function renderProduct_(c) {
     q ? '<span class="pquote">「' + escapeHtml(q) + '」</span>' : '',
   ].filter(Boolean).join('');
   return [
-    '<div class="pop shelf ' + escapeHtml(c.variant) + ' ' + themeClass_(c) + accentClass_(c) + '"' + fsStyle_(c) + '>',
+    '<div class="pop shelf ' + escapeHtml(c.variant) + ' ' + themeClass_(c) + accentClass_(c) +
+      portraitAdjustClass_(c) + frameClass_(c) + shelfDecoClass_(c) + '"' + fsStyle_(c) + '>',
+    shelfDecoHtml_(c),
     '  <div class="catch">' + badge + nl2brHtml_(c.catch) + '</div>',
     '  <div class="name-wrap"><div class="name' + (String(f.商品名 || '').length >= 8 ? ' long' : '') + '">' + escapeHtml(f.商品名) + '</div>',
     f.補足 ? '    <div class="reading">' + escapeHtml(f.補足) + '</div>' : '',
@@ -250,7 +281,8 @@ function renderExplain_(c) {
   }
 
   return [
-    '<div class="pop a4 ' + escapeHtml(c.variant) + ' ' + themeClass_(c) + ' deco-' + deco + accentClass_(c) + stampClass_(c) + '"' + fsStyle_(c) + '>',
+    '<div class="pop a4 ' + escapeHtml(c.variant) + ' ' + themeClass_(c) + ' deco-' + deco + accentClass_(c) +
+      stampClass_(c) + portraitAdjustClass_(c) + frameClass_(c) + '"' + fsStyle_(c) + '>',
     decoHtml_(deco, adjustOf_(c)),
     '<div class="a4-body">',
     header.filter(Boolean).join('\n'),

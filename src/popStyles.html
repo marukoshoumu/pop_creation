@@ -156,6 +156,27 @@
   .pop.has-ac.shelf.v3 { outline-color: color-mix(in srgb, var(--ac) 55%, transparent); }
   .pop.has-ac .chart .bar.hi { background: repeating-linear-gradient(45deg, color-mix(in srgb, var(--ac) 55%, #fff) 0 6px, color-mix(in srgb, var(--ac) 30%, #fff) 6px 12px); }
 
+  /* ===== 微調整: 枠線プリセット（両タイプ・案の標準枠を上書き。色は色あいに追従） =====
+     v2/v3 の枠・破線より後に書き、同点詳細度で後勝ちさせる */
+  .pop.frame-hand { border: 4px solid var(--ac, var(--ink)); outline: none;
+    border-radius: 165px 14px 155px 14px/14px 155px 14px 165px; }
+  .pop.frame-dash { border: 3px dashed var(--ac, var(--ink)); outline: none; border-radius: 14px; }
+  .pop.frame-double { border: 7px double var(--ac, var(--ink)); outline: none; border-radius: 10px; }
+  .pop.frame-none { border: none; outline: none; }
+
+  /* ===== 微調整: 棚札の飾り（マステ/スタンプ） ===== */
+  .shelf .tape { position: absolute; top: -0.6cqw; width: 13cqw; height: 3.6cqw;
+    background: rgba(230,200,120,.55); box-shadow: 0 1px 3px rgba(0,0,0,.1); z-index: 3; }
+  .shelf .tape.l { left: 5cqw; transform: rotate(-4deg); }
+  .shelf .tape.r { right: 5cqw; transform: rotate(3deg); }
+  .shelf .stamp.sh { position: absolute; top: 1.6cqw; right: 1.6cqw; width: 10.5cqw; height: 10.5cqw; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center; text-align: center; font-family: "Yuji Syuku", serif; font-weight: 700;
+    color: #fff; font-size: calc(2.6cqw * var(--fs,1)); line-height: 1.1; transform: rotate(-12deg); z-index: 3;
+    box-shadow: 0 2px 5px rgba(0,0,0,.15); background: var(--ac, var(--orange)); border: 2px solid rgba(255,255,255,.6); }
+  .shelf .stamp.sh.sk { background: var(--ac, #c9457c); }
+  /* スタンプとキャッチの重なり回避 */
+  .shelf.sdeco-stamp .catch { padding-right: 12cqw; }
+
   /* 棒グラフ */
   .charts { display: flex; gap: 6%; }
   .chart { flex: 1; text-align: center; }
@@ -183,14 +204,24 @@
   .pointlist { display: flex; flex-direction: column; gap: 4%; }
   .pointbox { border: 3px solid var(--ink); border-radius: 155px 12px 145px 12px/12px 145px 12px 155px; padding: 4.5% 6%; font-size: calc(5cqw * var(--fs,1)); font-weight: 700; text-align: center; }
 
-  /* 生産者の似顔絵（データURIのみ。丸枠・手貼り写真風の微傾斜） */
+  /* 生産者の似顔絵（データURIのみ。丸枠・手貼り写真風の微傾斜）
+     object-position は顔のある上寄りを優先（全身寄りの生成でも顔が切れにくい） */
   .pface { flex-shrink: 0; display: inline-flex; border-radius: 50%; overflow: hidden;
     border: 2px solid var(--ink); background: #fff; transform: rotate(-2deg); }
-  .pface img { width: 100%; height: 100%; object-fit: cover; display: block; }
-  .shelf .pface { width: 8cqw; height: 8cqw; align-self: center; }
+  .pface img { width: 100%; height: 100%; object-fit: cover; object-position: 50% 18%; display: block; }
+  .shelf .pface { width: 11cqw; height: 11cqw; align-self: center; }
+  /* 似顔絵の大きさ（小/標準/大） */
+  .shelf.psize-s .pface { width: 8cqw; height: 8cqw; }
+  .shelf.psize-l .pface { width: 15cqw; height: 15cqw; }
+  /* 似顔絵の位置: 右（名札より後ろ・容量の隣） */
+  .shelf.ppos-r .foot-l .pface { order: 9; margin-left: auto; }
   /* 説明型: 吹き出しの横に大きめの似顔絵 */
   .quote-row { display: flex; align-items: flex-end; gap: 3%; margin-top: 2%; }
-  .quote-row .pface.big { width: 14cqw; height: 14cqw; border-width: 2.5px; }
+  .quote-row .pface.big { width: 18cqw; height: 18cqw; border-width: 2.5px; }
+  .a4.psize-s .quote-row .pface.big { width: 13cqw; height: 13cqw; }
+  .a4.psize-l .quote-row .pface.big { width: 26cqw; height: 26cqw; }
+  .a4.ppos-r .quote-row { flex-direction: row-reverse; }
+  .a4.ppos-r .quote::after { left: auto; right: 13%; }
   .quote-row .quote { flex: 1; margin-top: 0; }
   .quote-row.noq { align-items: center; justify-content: center; }
   .quote-row .pname { font-size: calc(3.8cqw * var(--fs,1)); font-weight: 700; color: var(--ink); }

@@ -2,6 +2,7 @@
 function initialState_() {
   return { popType: 'product', fontTheme: 'fude', decoTheme: 'plain', fontScale: 1,
     accent: '', stampPos: 'tr', badge: true, producerFileId: '',
+    frame: '', sdeco: '', psize: 'm', ppos: 'l',
     inputText: '', audio: null, fields: null, missing: [], catches: [], selectedIndex: 0, content: null, fromReprint: false };
 }
 var state = initialState_();
@@ -149,6 +150,10 @@ function editPop(p) {
   var adj = content.adjust || {};
   state.stampPos = adj.stamp === 'tl' || adj.stamp === 'off' ? adj.stamp : 'tr';
   state.badge = adj.badge !== false;
+  state.frame = adj.frame || '';
+  state.sdeco = adj.sdeco || '';
+  state.psize = adj.psize === 's' || adj.psize === 'l' ? adj.psize : 'm';
+  state.ppos = adj.ppos === 'r' ? 'r' : 'l';
   state.producerFileId = content.producerFileId || '';
   state.fields = content.fields;
   state.missing = [];
@@ -465,7 +470,8 @@ function contentFor_(i) {
     variant: variants[i % variants.length],
     fontTheme: state.fontTheme, decoTheme: state.decoTheme, fontScale: state.fontScale,
     accent: state.accent,
-    adjust: { stamp: state.stampPos, badge: state.badge },
+    adjust: { stamp: state.stampPos, badge: state.badge,
+      frame: state.frame, sdeco: state.sdeco, psize: state.psize, ppos: state.ppos },
     producerFileId: state.producerFileId || '',
     catch: c.キャッチ, catchAngle: c.切り口,
     fields: state.fields,
@@ -523,11 +529,28 @@ function syncThemeButtons_() {
   document.querySelectorAll('.bd-btn').forEach(function (b) {
     b.classList.toggle('on', (b.getAttribute('data-bd') === '1') === state.badge);
   });
+  document.querySelectorAll('.fr-btn').forEach(function (b) {
+    b.classList.toggle('on', b.getAttribute('data-fr') === state.frame);
+  });
+  document.querySelectorAll('.sd-btn').forEach(function (b) {
+    b.classList.toggle('on', b.getAttribute('data-sd') === state.sdeco);
+  });
+  document.querySelectorAll('.ps-btn').forEach(function (b) {
+    b.classList.toggle('on', b.getAttribute('data-ps') === state.psize);
+  });
+  document.querySelectorAll('.pp-btn').forEach(function (b) {
+    b.classList.toggle('on', b.getAttribute('data-pp') === state.ppos);
+  });
   document.getElementById('deco-row').hidden = (state.popType !== 'explain');
   // スタンプ位置はスタンプ付き装飾（にぎやか/季節）のときだけ意味を持つ
   document.getElementById('stamp-row').hidden =
     !(state.popType === 'explain' && (state.decoTheme === 'lively' || state.decoTheme === 'season'));
   document.getElementById('badge-row').hidden = (state.popType !== 'product');
+  document.getElementById('sdeco-row').hidden = (state.popType !== 'product');
+  // 似顔絵の大きさ・位置は似顔絵を選んでいるときだけ
+  var noPortrait = !state.producerFileId;
+  document.getElementById('psize-row').hidden = noPortrait;
+  document.getElementById('ppos-row').hidden = noPortrait;
 }
 
 /* テーマ変更後に3案を再描画し、選択中の案・キャッチ編集を維持 */
@@ -560,6 +583,18 @@ document.querySelectorAll('.st-btn').forEach(function (b) {
 });
 document.querySelectorAll('.bd-btn').forEach(function (b) {
   b.addEventListener('click', function () { state.badge = b.getAttribute('data-bd') === '1'; rerenderKeepSelection_(); });
+});
+document.querySelectorAll('.fr-btn').forEach(function (b) {
+  b.addEventListener('click', function () { state.frame = b.getAttribute('data-fr'); rerenderKeepSelection_(); });
+});
+document.querySelectorAll('.sd-btn').forEach(function (b) {
+  b.addEventListener('click', function () { state.sdeco = b.getAttribute('data-sd'); rerenderKeepSelection_(); });
+});
+document.querySelectorAll('.ps-btn').forEach(function (b) {
+  b.addEventListener('click', function () { state.psize = b.getAttribute('data-ps'); rerenderKeepSelection_(); });
+});
+document.querySelectorAll('.pp-btn').forEach(function (b) {
+  b.addEventListener('click', function () { state.ppos = b.getAttribute('data-pp'); rerenderKeepSelection_(); });
 });
 /* キャッチ編集をライブ反映（改行含む）: 入力のたびに選択案のプレビューを更新 */
 document.getElementById('catch-edit').addEventListener('input', function () {
