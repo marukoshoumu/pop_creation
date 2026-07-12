@@ -6,7 +6,8 @@ function api_processInput(req) {
 }
 
 function api_generateCatches(req) {
-  return generateCatches(req.fields, req.popType);
+  var avoid = Array.isArray(req.avoid) ? req.avoid.filter(Boolean).slice(0, 9) : null;
+  return generateCatches(req.fields, req.popType, avoid);
 }
 
 function api_savePop(record, base64Png) {

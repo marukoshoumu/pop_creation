@@ -374,6 +374,20 @@ document.getElementById('catch-edit').addEventListener('input', function () {
   if (cell) cell.innerHTML = renderPop(contentFor_(state.selectedIndex));
 });
 
+/* 別の言い回しで再生成（直前の3案を avoid として渡し、似た案を避ける） */
+document.getElementById('btn-recatch').addEventListener('click', function () {
+  if (!state.fields) return;
+  var avoid = state.catches.map(function (c) { return c.キャッチ; });
+  showLoading('別の言い回しを考えています…');
+  runServer('api_generateCatches', { popType: state.popType, fields: state.fields, avoid: avoid })
+    .then(function (catches) {
+      hideLoading();
+      state.catches = catches;
+      renderVariants();
+    })
+    .catch(function (e) { hideLoading(); showError(e.message); });
+});
+
 document.getElementById('btn-select').addEventListener('click', function () {
   var edited = document.getElementById('catch-edit').value.trim();
   if (edited) state.catches[state.selectedIndex].キャッチ = edited;

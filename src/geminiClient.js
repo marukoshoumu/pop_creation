@@ -70,9 +70,9 @@ function extractContent(input, popType) {
   return popType === 'product' ? validateProductFields(obj) : validateExplainFields(obj);
 }
 
-function generateCatches(fields, popType) {
+function generateCatches(fields, popType, avoid) {
   var obj = callGemini_(buildGeminiRequest({
-    prompt: buildCatchesPrompt(fields, popType),
+    prompt: buildCatchesPrompt(fields, popType, avoid),
     schema: CATCHES_SCHEMA,
   }));
   var list = (obj['案'] || []).filter(function (a) { return a && a['キャッチ']; }).slice(0, 3);
