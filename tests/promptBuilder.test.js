@@ -20,34 +20,38 @@ test('buildExtractPrompt: 追加指示が末尾に付く', () => {
   assert.ok(s.includes('方言はそのまま残す'));
 });
 
-test('buildCatchesPrompt: 3案・切り口・変更禁止の指示', () => {
+test('buildCatchesPrompt: 3案・切り口・価格商品名を含めない指示', () => {
   const s = p.buildCatchesPrompt({ 商品名: 'わさびパウダー', 価格: 756 }, 'product');
   assert.ok(s.includes('3'));
   assert.ok(s.includes('切り口'));
-  assert.ok(s.includes('価格') && s.includes('変更'), '価格変更禁止の指示がない');
+  assert.ok(s.includes('キャッチ本文に含めない'), '価格・商品名を含めない指示がない');
   assert.ok(s.includes('わさびパウダー'), '確定内容が渡っていない');
 });
 
-test('buildCatchesPrompt: 人間らしさルール（短さ・文体3型・禁止語・非カタログ）', () => {
+test('buildCatchesPrompt: 鍵フレーズ抽出ルール（創作禁止・切り出し・28文字目安）', () => {
   const s = p.buildCatchesPrompt({ 商品名: 'トマト' }, 'product');
-  assert.ok(s.includes('8〜18文字'), '文字数指定がない');
-  assert.ok(s.includes('問いかけ型') && s.includes('数字・事実型') && s.includes('本音・つぶやき型'),
-    '3つの文体型がない');
-  assert.ok(s.includes('「美味しい」') && s.includes('禁止'), '汎用ほめ言葉の禁止がない');
-  assert.ok(s.includes('オノマトペ'), 'オノマトペの指示がない');
-  assert.ok(s.includes('カタログ'), '非カタログ文体の指示がない');
+  assert.ok(s.includes('抜き出'), '抜き出し指示がない');
+  assert.ok(s.includes('言い換え') && s.includes('禁止'), '言い換え禁止がない');
+  assert.ok(!s.includes('問いかけ型'), '旧文体型が残っている');
+  assert.ok(!s.includes('本音・つぶやき型'), '旧文体型が残っている');
+  assert.ok(s.includes('28'), '28文字目安がない');
+  assert.ok(s.includes('アピールポイント') || s.includes('箇条書き') || s.includes('ひとこと'),
+    '元ネタフィールドの指示がない');
+  assert.ok(s.includes('美味しい') && s.includes('禁止'), '汎用ほめ言葉の新規追加禁止がない');
+  assert.ok(s.includes('誇大') || s.includes('日本一'), '誇大表現禁止がない');
   assert.ok(s.includes('4文字以内'), '切り口ラベル長の指示がない');
+  assert.ok(!s.includes('オノマトペ'), 'オノマトペ上限（廃止）が残っている');
 });
 
 test('buildCatchesPrompt: avoid 指定で回避リストが付く / 無指定なら付かない', () => {
   const avoid = ['朝どりの香り、そのまま', 'シャキッと甘い'];
   const s = p.buildCatchesPrompt({ 商品名: 'トマト' }, 'product', avoid);
-  assert.ok(s.includes('似た言い回しは避けて'), '回避指示がない');
+  assert.ok(s.includes('似た') && (s.includes('避け') || s.includes('避けて')), '回避指示がない');
   avoid.forEach((a) => assert.ok(s.includes(a), a + ' が回避リストにない'));
   const s2 = p.buildCatchesPrompt({ 商品名: 'トマト' }, 'product');
-  assert.ok(!s2.includes('似た言い回しは避けて'), '無指定なのに回避指示が付いた');
+  assert.ok(!s2.includes('前回の案'), '無指定なのに回避リスト節が付いた');
   const s3 = p.buildCatchesPrompt({ 商品名: 'トマト' }, 'product', []);
-  assert.ok(!s3.includes('似た言い回しは避けて'), '空配列なのに回避指示が付いた');
+  assert.ok(!s3.includes('前回の案'), '空配列なのに回避リスト節が付いた');
 });
 
 test('buildExtractPrompt: 話し言葉・非カタログ文体の指示を含む', () => {
