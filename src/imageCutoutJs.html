@@ -5,10 +5,14 @@
  * 画像の四辺を起点にフラッドフィルし、端に連結した「ほぼ白」領域だけを透明化する。
  * 端連結方式なので、人物内部の白（歯・白い服・帽子）は消えない。
  * 生成プロンプトが「背景は白一色」のため、既存登録済みイラストにもそのまま適用できる。
+ * 仕上げに人物の周囲へステッカー風の白フチを付ける。淡い水彩の顔（ほぼ白）が
+ * クリーム色の紙に直接載ると溶けて見辛いため、白フチで人物と紙を分離する。
  */
 
 /* 水彩のにじみを拾えるようやや緩め。R,G,B すべてこの値以上を「ほぼ白」とみなす */
 var CUTOUT_WHITE_MIN = 235;
+/* 白フチの太さ（画像短辺に対する比率） */
+var CUTOUT_OUTLINE_RATIO = 0.035;
 
 /** img: ImageData 互換 {data: Uint8ClampedArray(RGBA), width, height}。破壊的に書き換えて返す */
 function cutoutWhiteBackground(img) {
@@ -32,7 +36,44 @@ function cutoutWhiteBackground(img) {
     var cx = i % w, cy = (i - cx) / w;
     push(cx + 1, cy); push(cx - 1, cy); push(cx, cy + 1); push(cx, cy - 1);
   }
+  addStickerOutline_(img);
   return img;
+}
+
+/** 人物（不透明部分）の外側を白で縁取る。透明化された背景側だけを塗るので人物は変えない */
+function addStickerOutline_(img) {
+  var w = img.width, h = img.height, d = img.data;
+  var r = Math.max(1, Math.round(Math.min(w, h) * CUTOUT_OUTLINE_RATIO));
+  // 透明画素に隣接する不透明画素を初期フロンティアにして、r 周ぶん外側へ白を広げる
+  var frontier = [];
+  for (var y = 0; y < h; y++) {
+    for (var x = 0; x < w; x++) {
+      var i = y * w + x;
+      if (d[i * 4 + 3] === 0) continue;
+      if ((x > 0 && d[(i - 1) * 4 + 3] === 0) || (x < w - 1 && d[(i + 1) * 4 + 3] === 0) ||
+          (y > 0 && d[(i - w) * 4 + 3] === 0) || (y < h - 1 && d[(i + w) * 4 + 3] === 0)) {
+        frontier.push(i);
+      }
+    }
+  }
+  for (var step = 0; step < r && frontier.length; step++) {
+    var next = [];
+    for (var k = 0; k < frontier.length; k++) {
+      var f = frontier[k], fx = f % w, fy = (f - fx) / w;
+      var nb = [];
+      if (fx > 0) nb.push(f - 1);
+      if (fx < w - 1) nb.push(f + 1);
+      if (fy > 0) nb.push(f - w);
+      if (fy < h - 1) nb.push(f + w);
+      for (var m = 0; m < nb.length; m++) {
+        var n = nb[m], o = n * 4;
+        if (d[o + 3] !== 0) continue;
+        d[o] = 255; d[o + 1] = 255; d[o + 2] = 255; d[o + 3] = 255;
+        next.push(n);
+      }
+    }
+    frontier = next;
+  }
 }
 
 if (typeof module !== 'undefined') {
