@@ -156,10 +156,18 @@ function quoteHtml_(f) {
 }
 
 /* ===== 商品型（棚札） ===== */
+/**
+ * 価格: 空なら price 要素ごと出さない（grid 右列が消え商品名が全幅に広がる）。
+ * 数字のみ（カンマ許容）は従来の巨大数字＋円（税込）。それ以外（複数価格・時価等）は入力どおり印字
+ */
 function shelfPriceHtml_(価格) {
-  if (価格 === null || 価格 === undefined || 価格 === '') return '<div class="price"></div>';
-  return '<div class="price">' + escapeHtml(価格) +
-    '<span class="yen">円</span><span class="tax">（税込）</span></div>';
+  var p = String(価格 === null || 価格 === undefined ? '' : 価格).trim();
+  if (!p) return '';
+  if (/^[0-9][0-9,，]*$/.test(p)) {
+    return '<div class="price">' + escapeHtml(p) +
+      '<span class="yen">円</span><span class="tax">（税込）</span></div>';
+  }
+  return '<div class="price free' + (p.length >= 12 ? ' long' : '') + '">' + escapeHtml(p) + '</div>';
 }
 
 function renderProduct_(c) {
@@ -182,7 +190,7 @@ function renderProduct_(c) {
     '  <div class="name-wrap"><div class="name' + (String(f.商品名 || '').length >= 8 ? ' long' : '') + '">' + escapeHtml(f.商品名) + '</div>',
     f.補足 ? '    <div class="reading">' + escapeHtml(f.補足) + '</div>' : '',
     '  </div>',
-    '  ' + shelfPriceHtml_(f.価格),
+    shelfPriceHtml_(f.価格) ? '  ' + shelfPriceHtml_(f.価格) : '',
     '  <div class="foot"><div class="foot-l">' + footL + '</div><span class="amount"><b>' + escapeHtml(f.容量) + '</b></span></div>',
     '</div>',
   ].filter(Boolean).join('\n');
