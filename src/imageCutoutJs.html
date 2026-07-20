@@ -1,0 +1,41 @@
+<script>
+// 自動生成: shared/imageCutout.js から build-shared.sh が生成。直接編集しない
+/**
+ * 似顔絵の白背景切り抜き（純粋関数・Node テスト可能）
+ * 画像の四辺を起点にフラッドフィルし、端に連結した「ほぼ白」領域だけを透明化する。
+ * 端連結方式なので、人物内部の白（歯・白い服・帽子）は消えない。
+ * 生成プロンプトが「背景は白一色」のため、既存登録済みイラストにもそのまま適用できる。
+ */
+
+/* 水彩のにじみを拾えるようやや緩め。R,G,B すべてこの値以上を「ほぼ白」とみなす */
+var CUTOUT_WHITE_MIN = 235;
+
+/** img: ImageData 互換 {data: Uint8ClampedArray(RGBA), width, height}。破壊的に書き換えて返す */
+function cutoutWhiteBackground(img) {
+  var w = img.width, h = img.height, d = img.data;
+  var visited = new Uint8Array(w * h);
+  var stack = [];
+  function push(x, y) {
+    if (x < 0 || y < 0 || x >= w || y >= h) return;
+    var i = y * w + x;
+    if (visited[i]) return;
+    var o = i * 4;
+    if (d[o] < CUTOUT_WHITE_MIN || d[o + 1] < CUTOUT_WHITE_MIN || d[o + 2] < CUTOUT_WHITE_MIN) return;
+    visited[i] = 1;
+    stack.push(i);
+  }
+  for (var x = 0; x < w; x++) { push(x, 0); push(x, h - 1); }
+  for (var y = 0; y < h; y++) { push(0, y); push(w - 1, y); }
+  while (stack.length) {
+    var i = stack.pop();
+    d[i * 4 + 3] = 0;
+    var cx = i % w, cy = (i - cx) / w;
+    push(cx + 1, cy); push(cx - 1, cy); push(cx, cy + 1); push(cx, cy - 1);
+  }
+  return img;
+}
+
+if (typeof module !== 'undefined') {
+  module.exports = { cutoutWhiteBackground };
+}
+</script>
