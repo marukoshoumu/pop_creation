@@ -216,11 +216,9 @@
   .pointlist { display: flex; flex-direction: column; gap: 4%; }
   .pointbox { border: 3px solid var(--ink); border-radius: 155px 12px 145px 12px/12px 145px 12px 155px; padding: 4.5% 6%; font-size: calc(5cqw * var(--fs,1)); font-weight: 700; text-align: center; }
 
-  /* 生産者の似顔絵（データURIのみ。丸枠・手貼り写真風の微傾斜）
-     object-position は顔のある上寄りを優先（全身寄りの生成でも顔が切れにくい） */
-  .pface { flex-shrink: 0; display: inline-flex; border-radius: 50%; overflow: hidden;
-    border: 2px solid var(--ink); background: #fff; transform: rotate(-2deg); }
-  .pface img { width: 100%; height: 100%; object-fit: cover; object-position: 50% 18%; display: block; }
+  /* 生産者の似顔絵（データURIのみ）: 白背景を透過切り抜き済みの人物をそのまま置く（丸枠なし） */
+  .pface { flex-shrink: 0; display: inline-flex; }
+  .pface img { width: 100%; height: 100%; object-fit: contain; display: block; }
   /* 棚札の似顔絵はマイナスマージンで行の高さへの寄与を約7cqwに固定する。
      でないと大きめ似顔絵が下段を押し広げ、固定高グリッドがキャッチ行を圧縮して
      （overflow:hidden の行は最小高0まで縮む）手直しした2行目が消える */
@@ -232,7 +230,7 @@
   .shelf.ppos-r .foot-l .pface { order: 9; margin-left: auto; }
   /* 説明型: 吹き出しの横に大きめの似顔絵 */
   .quote-row { display: flex; align-items: flex-end; gap: 3%; margin-top: 2%; }
-  .quote-row .pface.big { width: 18cqw; height: 18cqw; border-width: 2.5px; }
+  .quote-row .pface.big { width: 18cqw; height: 18cqw; }
   .a4.psize-s .quote-row .pface.big { width: 13cqw; height: 13cqw; }
   .a4.psize-l .quote-row .pface.big { width: 26cqw; height: 26cqw; }
   .a4.ppos-r .quote-row { flex-direction: row-reverse; }

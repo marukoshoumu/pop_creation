@@ -49,12 +49,35 @@ document.getElementById('error-close').addEventListener('click', function () {
 var producers_ = null;    // マスタ一覧のキャッシュ（登録時に無効化）
 var portraitCache_ = {};  // イラストFileID -> データURI
 
+/** データURIの白背景を透過に切り抜いた PNG データURIを返す（失敗時は元のURIのまま続行） */
+function cutoutPortraitUri_(uri) {
+  return new Promise(function (resolve) {
+    var img = new Image();
+    img.onload = function () {
+      try {
+        var cv = document.createElement('canvas');
+        cv.width = img.width; cv.height = img.height;
+        var ctx = cv.getContext('2d');
+        ctx.drawImage(img, 0, 0);
+        var data = ctx.getImageData(0, 0, cv.width, cv.height);
+        cutoutWhiteBackground(data);
+        ctx.putImageData(data, 0, 0);
+        resolve(cv.toDataURL('image/png'));
+      } catch (e) { resolve(uri); }
+    };
+    img.onerror = function () { resolve(uri); };
+    img.src = uri;
+  });
+}
+
 function fetchPortrait_(fileId) {
   if (!fileId) return Promise.resolve(null);
   if (portraitCache_[fileId]) return Promise.resolve(portraitCache_[fileId]);
   return runServer('api_getPortrait', fileId).then(function (r) {
-    portraitCache_[fileId] = 'data:' + r.mimeType + ';base64,' + r.base64;
-    return portraitCache_[fileId];
+    return cutoutPortraitUri_('data:' + r.mimeType + ';base64,' + r.base64);
+  }).then(function (uri) {
+    portraitCache_[fileId] = uri;
+    return uri;
   }).catch(function () { return null; });  // 取得失敗はイラスト無しで続行
 }
 
@@ -374,10 +397,14 @@ document.getElementById('pm-generate').addEventListener('click', function () {
   showLoading('似顔絵を描いています…（30秒ほどかかることがあります）');
   runServer('api_generatePortrait', { photo: pmPhoto_, touch: pmTouch_ })
     .then(function (r) {
-      hideLoading();
       pmResult_ = r;
+      // プレビューも切り抜き後を表示（POP に載る仕上がりと揃える）
+      return cutoutPortraitUri_('data:' + r.mimeType + ';base64,' + r.base64);
+    })
+    .then(function (uri) {
+      hideLoading();
       var img = document.getElementById('pm-preview');
-      img.src = 'data:' + r.mimeType + ';base64,' + r.base64;
+      img.src = uri;
       img.hidden = false;
       document.getElementById('pm-save').disabled = false;
     })
@@ -394,10 +421,12 @@ document.getElementById('pm-save').addEventListener('click', function () {
     .then(function (r) {
       hideLoading();
       producers_ = null;  // マスタを次回再取得
-      portraitCache_[r.イラストFileID] = 'data:' + result.mimeType + ';base64,' + result.base64;
       state.producerFileId = r.イラストFileID;
       document.getElementById('producer-modal').hidden = true;
-      syncPortraitUI_();
+      cutoutPortraitUri_('data:' + result.mimeType + ';base64,' + result.base64).then(function (uri) {
+        portraitCache_[r.イラストFileID] = uri;
+        syncPortraitUI_();
+      });
     })
     .catch(function (e) { hideLoading(); showError(e.message); });
 });
