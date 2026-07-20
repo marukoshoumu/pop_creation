@@ -235,7 +235,7 @@ document.getElementById('btn-process').addEventListener('click', processInput);
 function startManualEntry() {
   state.inputText = document.getElementById('input-text').value.trim();
   state.fields = state.popType === 'product'
-    ? { 商品名: '', 補足: '', 価格: null, 容量: '', 生産者: '', 生産者のひとこと: '', アピールポイント: [] }
+    ? { 商品名: '', 補足: '', 価格: '', 容量: '', 生産者: '', 生産者のひとこと: '', アピールポイント: [] }
     : { フック: '', 主題: '', 生産者: '', 生産者のひとこと: '', 説明文: '', 箇条書き: [], 比較データ: [] };
   state.missing = [];
   renderConfirm();
@@ -260,8 +260,8 @@ function renderConfirm() {
   if (state.popType === 'product') {
     html = fieldRow_('商品名', '商品名', f.商品名) +
       fieldRow_('補足', '補足（よみ・別名）', f.補足) +
-      fieldRow_('価格', '価格（税込・数字のみ）', f.価格 === null ? '' : f.価格,
-        { warn: true, hint: '※ ここで入力した数字が“そのまま”印刷されます。かならず確認してください。' }) +
+      fieldRow_('価格', '価格（税込・空欄なら印刷されません）', f.価格 === null || f.価格 === undefined ? '' : f.価格,
+        { warn: true, hint: '※ 入力どおりに印刷されます。数字のみ（例: 756）なら大きく「756円（税込）」の形。複数価格（例: S 300円 / L 500円）はそのまま印字。空欄なら価格エリアごと印刷されません。' }) +
       fieldRow_('容量', '容量（例: 10g、3本）', f.容量) +
       fieldRow_('生産者', '生産者・売り場名', f.生産者) +
       fieldRow_('生産者のひとこと', '生産者のひとこと（本人の言葉のまま。「」内に印刷）', f.生産者のひとこと || '',
@@ -409,12 +409,9 @@ function collectConfirm_() {
   };
   var lines = function (k) { return get(k).split('\n').map(function (s) { return s.trim(); }).filter(Boolean); };
   if (state.popType === 'product') {
-    var priceRaw = get('価格');
     if (!get('商品名')) { showError('商品名は必須です。'); return null; }
-    if (priceRaw === '' || isNaN(Number(priceRaw))) { showError('価格は数字で入力してください（必須）。'); return null; }
-    if (Number(priceRaw) < 0) { showError('価格は0以上の数字で入力してください。'); return null; }
     return {
-      商品名: get('商品名'), 補足: get('補足'), 価格: Number(priceRaw),
+      商品名: get('商品名'), 補足: get('補足'), 価格: get('価格'),
       容量: get('容量'), 生産者: get('生産者'), 生産者のひとこと: get('生産者のひとこと'),
       アピールポイント: lines('アピールポイント'),
     };
