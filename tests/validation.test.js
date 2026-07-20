@@ -20,23 +20,25 @@ test('validateProductFields: 完全な応答', () => {
     商品名: 'わさびパウダー', 補足: '山葵粉末', 価格: 756, 容量: '10g',
     生産者: 'ふれあい広場', アピールポイント: ['真妻わさび100%'],
   });
-  assert.strictEqual(r.fields.価格, 756);
+  assert.strictEqual(r.fields.価格, '756');
   assert.deepStrictEqual(r.missing, []);
 });
 
-test('validateProductFields: 欠け・型違いは空値化して missing に列挙', () => {
-  const r = v.validateProductFields({ 商品名: 'きゅうり', 価格: '不明' });
-  assert.strictEqual(r.fields.価格, null);
+test('validateProductFields: 欠け・型違いは空値化して missing に列挙（価格は任意）', () => {
+  const r = v.validateProductFields({ 商品名: 'きゅうり' });
+  assert.strictEqual(r.fields.価格, '');
   assert.strictEqual(r.fields.容量, '');
   assert.deepStrictEqual(r.fields.アピールポイント, []);
-  assert.ok(r.missing.includes('価格'));
+  assert.ok(!r.missing.includes('価格'), '価格は任意なので missing に入れない');
   assert.ok(r.missing.includes('容量'));
   assert.ok(!r.missing.includes('商品名'));
 });
 
-test('validateProductFields: 価格は数値文字列なら数値化', () => {
-  const r = v.validateProductFields({ 商品名: 'x', 価格: '756' });
-  assert.strictEqual(r.fields.価格, 756);
+test('validateProductFields: 価格は自由テキストをそのまま保持（複数価格・指定なし対応）', () => {
+  const r = v.validateProductFields({ 商品名: 'x', 価格: ' S 300円 / L 500円 ' });
+  assert.strictEqual(r.fields.価格, 'S 300円 / L 500円');
+  const r2 = v.validateProductFields({ 商品名: 'x', 価格: '756' });
+  assert.strictEqual(r2.fields.価格, '756');
 });
 
 test('validateExplainFields: 比較データの数値検証', () => {

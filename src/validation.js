@@ -20,6 +20,13 @@ function asNumber_(v) {
   return null;
 }
 
+/** 価格: 数値でも文字列でも「印字する文字列」として受ける（複数価格・指定なし対応） */
+function asPriceString_(v) {
+  if (typeof v === 'number' && isFinite(v)) return String(v);
+  if (typeof v === 'string') return v.trim();
+  return '';
+}
+
 function asStringArray_(v) {
   if (!Array.isArray(v)) return [];
   return v.map(asString_).filter(function (s) { return s !== ''; });
@@ -30,7 +37,7 @@ function validateProductFields(obj) {
   const fields = {
     商品名: asString_(o['商品名']),
     補足: asString_(o['補足']),
-    価格: asNumber_(o['価格']),
+    価格: asPriceString_(o['価格']),
     容量: asString_(o['容量']),
     生産者: asString_(o['生産者']),
     アピールポイント: asStringArray_(o['アピールポイント']),
@@ -38,7 +45,6 @@ function validateProductFields(obj) {
   };
   const missing = [];
   if (!fields.商品名) missing.push('商品名');
-  if (fields.価格 === null) missing.push('価格');
   if (!fields.容量) missing.push('容量');
   if (!fields.生産者) missing.push('生産者');
   return { fields: fields, missing: missing };
