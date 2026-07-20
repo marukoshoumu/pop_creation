@@ -90,3 +90,13 @@ test('buildGeminiRequest: 音声は inlineData が先頭', () => {
   assert.strictEqual(r.contents[0].parts[0].inlineData.mimeType, 'audio/mp4');
   assert.strictEqual(r.contents[0].parts[1].text, '文字起こしして抽出');
 });
+
+test('EXTRACT_SCHEMA_PRODUCT: 価格は STRING（複数価格・指定なし対応）', () => {
+  assert.strictEqual(p.EXTRACT_SCHEMA_PRODUCT.properties.価格.type, 'STRING');
+});
+
+test('buildExtractPrompt(product): 価格の抽出ルール（単一は数字のみ・複数はそのまま・無ければ空）', () => {
+  const s = p.buildExtractPrompt('product', '');
+  assert.ok(s.includes('単一価格'), '単一価格の指示がない');
+  assert.ok(s.includes('言われたとおり'), '複数価格の指示がない');
+});
